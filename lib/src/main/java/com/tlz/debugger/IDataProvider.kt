@@ -1,6 +1,9 @@
 package com.tlz.debugger
 
+import android.content.ContentValues
 import android.content.Context
+import android.renderscript.Element
+import com.tlz.debugger.model.KeyValue
 import com.tlz.debugger.model.TableFieldInfo
 import com.tlz.debugger.model.TableInfo
 import com.tlz.debugger.model.TableWrapper
@@ -36,27 +39,43 @@ class IDataProvider(private val ctx: Context) : DataProvider {
     return wrapper
   }
 
-  override fun executeQuery(dName: String, sql: String): List<List<String>> {
-    openDatabase(dName)
-    val data = mutableListOf<List<String>>()
-    database?.let {
-      var cursor: Cursor? = null
-      try {
-        cursor = it.rawQuery(sql, null)
-        cursor?.let { cur ->
-          val columnCount = cur.columnCount
-          while (cur.moveToNext()) {
-            val columnData = mutableListOf<String>()
-            (0 until columnCount).forEach {
-              columnData.add(cur.getString(it) ?: "null")
-            }
-            data.add(columnData)
-          }
-          cur.close()
+  override fun executeQuery(dName: String, tName: String, sql: String): List<Any> {
+    val data = mutableListOf<Any>()
+    if (dName == "SharePreferences") {
+      val sharePreferences = ctx.getSharedPreferences(tName, Context.MODE_PRIVATE)
+      for (entry in sharePreferences.all.entries) {
+        val type = when {
+          entry.value is String -> ConstUtils.TYPE_TEXT
+          entry.value is Int -> ConstUtils.TYPE_INTEGER
+          entry.value is Long -> ConstUtils.TYPE_LONG
+          entry.value is Float -> ConstUtils.TYPE_FLOAT
+          entry.value is Boolean -> ConstUtils.TYPE_BOOLEAN
+          entry.value is Set<*> -> ConstUtils.TYPE_STRING_SET
+          else -> ConstUtils.TYPE_TEXT
         }
-      } finally {
-        executeSafely { cursor?.close() }
-        closeDatabase()
+        data.add(KeyValue(entry.key, entry.value?.toString() ?: "null", type))
+      }
+    } else {
+      openDatabase(dName)
+      database?.let {
+        var cursor: Cursor? = null
+        try {
+          cursor = it.rawQuery(sql, null)
+          cursor?.let { cur ->
+            val columnCount = cur.columnCount
+            while (cur.moveToNext()) {
+              val columnData = mutableListOf<String>()
+              (0 until columnCount).forEach {
+                columnData.add(cur.getString(it) ?: "null")
+              }
+              data.add(columnData)
+            }
+            cur.close()
+          }
+        } finally {
+          executeSafely { cursor?.close() }
+          closeDatabase()
+        }
       }
     }
     return data
@@ -71,6 +90,29 @@ class IDataProvider(private val ctx: Context) : DataProvider {
         closeDatabase()
       }
       true
+    } ?: false
+  }
+
+  override fun deleteRow(dName: String, tName: String, where: String): Boolean {
+    openDatabase(dName)
+    return database?.let {
+      try {
+        it.delete(tName, where, null)
+      } finally {
+        closeDatabase()
+      }
+      true
+    } ?: false
+  }
+
+  override fun updateRow(dName: String, tName: String, contentValues: ContentValues, where: String): Boolean {
+    openDatabase(dName)
+    return database?.let {
+      try {
+        it.update(tName, contentValues, where, null) == 1
+      } finally {
+        closeDatabase()
+      }
     } ?: false
   }
 
@@ -182,21 +224,27 @@ class IDataProvider(private val ctx: Context) : DataProvider {
         if (it.count > 0) {
           do {
             var isPrimary = false
+            var type = "Null"
             var name = "Null"
+            var nullable = false
+            var defValue: String? = null
             for (i in 0 until it.columnCount) {
               val columnName = it.getColumnName(i)
               when (columnName) {
                 ConstUtils.PK -> isPrimary = it.getInt(i) == 1
+                ConstUtils.TYPE -> type = it.getString(i)
                 ConstUtils.NAME -> name = it.getString(i)
+                ConstUtils.NULLABLE -> nullable = it.getInt(i) == 1
+                ConstUtils.DEF_VALUE -> defValue = it.getString(i)
               }
             }
-            infos.add(TableFieldInfo(name, isPrimary))
+            infos.add(TableFieldInfo(name, type, isPrimary, nullable, defValue))
           } while (it.moveToNext())
         }
         it.close()
       }
     } catch (e: Exception) {
-
+      e.printStackTrace()
     } finally {
       executeSafely { cursor?.close() }
     }

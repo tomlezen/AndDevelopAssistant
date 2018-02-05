@@ -50,7 +50,7 @@ public class CarDBHelper extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
         db.execSQL(
                 "create table cars " +
-                        "(id integer primary key, name text, color text, mileage real)"
+                        "(id integer primary key, name text, color text, mileage real, bool blob)"
         );
 
         db.execSQL("create table [transaction1] (id integer primary key, name text)");

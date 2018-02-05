@@ -1,6 +1,7 @@
 package com.tlz.debugger
 
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -9,7 +10,7 @@ import com.google.gson.GsonBuilder
 import com.tlz.debugger.model.AppInfo
 import com.tlz.debugger.model.DataResponse
 import com.tlz.debugger.model.Db
-import com.tlz.debugger.model.Response
+import com.tlz.debugger.model.KeyValue
 import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -89,6 +90,13 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
               handleDeleteRequest(it.parms)
             }
           }
+          uri.contains("/api/update") -> {
+            return if (it.parms.isEmpty() || !it.parms.containsKey("dName") || !it.parms.containsKey("tName") || !it.parms.containsKey("where") || !it.parms.containsKey("data")) {
+              responseError(errorMsg = "缺少查询参数")
+            } else {
+              handleUpdateRequest(it.parms)
+            }
+          }
         //获取应用logo
           uri == "/image/appIcon" -> {
             try {
@@ -121,11 +129,11 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
       val dName = params["dName"] ?: ""
       //表名
       val tName = params["tName"] ?: ""
-      //客户端执行的查询语句，语句不能够有排序代码
-      val searchSql = with(params["sql"] ?: "select * from $tName"){
-        if(this.contains("order by ")){
+      //客户端执行的查询语句不能够有排序代码
+      val searchSql = with(params["sql"] ?: "select * from $tName") {
+        if (this.contains("order by ")) {
           this.substring(0, this.indexOf("order by"))
-        }else{
+        } else {
           this
         }
       }
@@ -134,48 +142,53 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
       val length = params["length"]?.toInt() ?: -1
       var recordsTotal = 0
       var recordsFiltered = 0
-      dataProvider.getTableInfo(dName, tName)?.let {
-        //获取where条件
-        val where = if (searchSql.contains("where")) searchSql.substring(searchSql.indexOf("where") + 5, searchSql.length) else ""
-        //获取查询到的数据最大数量.
-        recordsTotal = dataProvider.getTableDataCount(dName, tName, where)
-        //获取排序方式
-        val orderDir = params["order[0][dir]"] ?: "asc"
-        //排序列
-        val orderColumn = it.fieldInfos[params["order[0][column]"]?.toInt() ?: 0].name
-        //用户输入的过滤字符
-        val filterValue = params["search[value]"]
-        val filterList = mutableListOf<String>()
-        if (!filterValue.isNullOrBlank()) {
-          it.fieldInfos.forEach {
-            filterList.add("${it.name} like '%$filterValue%'")
+      if (dName == "SharePreferences") {
+        val data = dataProvider.executeQuery(dName, tName, "")
+        return responseData(DataResponse(draw, data.size, data.size, data))
+      } else {
+        dataProvider.getTableInfo(dName, tName)?.let {
+          //获取where条件
+          val where = if (searchSql.contains("where")) searchSql.substring(searchSql.indexOf("where") + 5, searchSql.length) else ""
+          //获取查询到的数据最大数量.
+          recordsTotal = dataProvider.getTableDataCount(dName, tName, where)
+          //获取排序方式
+          val orderDir = params["order[0][dir]"] ?: "asc"
+          //排序列
+          val orderColumn = it.fieldInfos[params["order[0][column]"]?.toInt() ?: 0].name
+          //用户输入的过滤字符
+          val filterValue = params["search[value]"]
+          val filterList = mutableListOf<String>()
+          if (!filterValue.isNullOrBlank()) {
+            it.fieldInfos.forEach {
+              filterList.add("${it.name} like '%$filterValue%'")
+            }
           }
+          //拼接过滤条件
+          var filterWhere = " "
+          if (filterList.size == 1) {
+            filterWhere = filterList[0]
+          } else if (filterList.isNotEmpty()) {
+            filterList.forEach { filterWhere += "$it or " }
+            filterWhere = filterWhere.substring(0, filterWhere.length - 3)
+          }
+          //获取过滤后的数据最大数量
+          recordsFiltered = if (filterWhere.isNotBlank()) {
+            dataProvider.getTableDataCount(dName, tName, "$where $filterWhere")
+          } else {
+            recordsTotal
+          }
+          var sql = "select * from $tName"
+          val tWhere = where + filterWhere
+          if (tWhere.isNotBlank()) {
+            sql += " where $tWhere"
+          }
+          sql += " order by $orderColumn $orderDir"
+          if (length >= 0) {
+            sql += " limit $start, $length"
+          }
+          val data = dataProvider.executeQuery(dName, tName, sql)
+          return responseData(DataResponse(draw, recordsTotal, recordsFiltered, data))
         }
-        //拼接过滤条件
-        var filterWhere = " "
-        if (filterList.size == 1) {
-          filterWhere = filterList[0]
-        } else if (filterList.isNotEmpty()) {
-          filterList.forEach { filterWhere += "$it or " }
-          filterWhere = filterWhere.substring(0, filterWhere.length - 3)
-        }
-        //获取过滤后的数据最大数量
-        recordsFiltered = if (filterWhere.isNotBlank()) {
-          dataProvider.getTableDataCount(dName, tName, "$where $filterWhere")
-        } else {
-          recordsTotal
-        }
-        var sql = "select * from $tName"
-        val tWhere = where + filterWhere
-        if (tWhere.isNotBlank()) {
-          sql += " where $tWhere"
-        }
-        sql += " order by $orderColumn $orderDir"
-        if (length >= 0) {
-          sql += " limit $start, $length"
-        }
-        val data = dataProvider.executeQuery(dName, sql)
-        return responseData(DataResponse(draw, recordsTotal, recordsFiltered, data))
       }
       return responseData(DataResponse(draw, recordsTotal, recordsFiltered, mutableListOf(), "没有找到${dName}数据库下的${tName}表"))
     } catch (e: Exception) {
@@ -185,16 +198,44 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
   }
 
   /**
+   * 处理数据更新操作请求.
+   */
+  private fun handleUpdateRequest(params: Map<String, String>): NanoHTTPD.Response {
+    val dName = params["dName"] ?: ""
+    val tName = params["tName"] ?: ""
+    val where = params["where"] ?: ""
+    val data = params["data"] ?: ""
+    return if (where.isNotBlank() && data.isNotBlank()) {
+      (gson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
+        val contentValues = ContentValues()
+        it.forEach {
+          when (it.type) {
+            ConstUtils.TYPE_INTEGER -> contentValues.put(it.key, it.value?.toIntOrNull())
+            ConstUtils.TYPE_REAL -> contentValues.put(it.key, it.value?.toDoubleOrNull())
+            else -> contentValues.put(it.key, it.value)
+          }
+        }
+        if (dataProvider.updateRow(dName, tName, contentValues, where)) {
+          responseData(com.tlz.debugger.model.Response(data = "success"))
+        } else {
+          responseError(errorMsg = "没有找到匹配的数据")
+        }
+      } ?: responseError(errorMsg = "更新内容数据解析失败")
+    } else {
+      responseError(errorMsg = "缺少更新条件或更新内容")
+    }
+  }
+
+  /**
    * 处理数据删除请求.
    */
   private fun handleDeleteRequest(params: Map<String, String>): NanoHTTPD.Response {
     val dName = params["dName"] ?: ""
     val tName = params["tName"] ?: ""
-    val where = "id = 2 and name = 'name_2' and color = 'RED' and mileage = 12.45"//params["where"] ?: ""
+    val where = params["where"] ?: ""
     return if (where.isNotBlank()) {
-      val sql = "delete from $tName where $where"
       try {
-        if (dataProvider.executeSql(dName, sql)) {
+        if (dataProvider.deleteRow(dName, tName, where)) {
           responseData(com.tlz.debugger.model.Response(data = "success"))
         } else {
           responseError(errorMsg = "没有匹配的数据")
@@ -209,11 +250,12 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
   }
 
   /**
-   * 处理数据添加请求.
+   * 处理添加数据请求.
    */
 //  private fun handleAddRequest(params: Map<String, String>): NanoHTTPD.Response {
 //
 //  }
+
 
   companion object {
     private const val DEF_PORT = 10000
