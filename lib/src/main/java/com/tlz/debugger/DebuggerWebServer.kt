@@ -1,7 +1,6 @@
 package com.tlz.debugger
 
 import android.annotation.SuppressLint
-import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -25,11 +24,11 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
 
   private val tag = DebuggerWebServer::class.java.canonicalName
 
-  private val dataProvider: DataProvider by lazy { IDataProvider(ctx) }
   private val gson: Gson by lazy { GsonBuilder().create() }
+  private val dataProvider: DataProvider by lazy { IDataProvider(ctx, gson) }
 
   /** web服务器是否运行. */
-  var isRunning = false
+  private var isRunning = false
 
   /**
    * 启动服务器.
@@ -140,10 +139,12 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
       val draw = params["draw"]?.toInt() ?: 0
       val start = params["start"]?.toInt() ?: 0
       val length = params["length"]?.toInt() ?: -1
+      //获取排序方式
+      val orderDir = params["order[0][dir]"] ?: ""
       var recordsTotal = 0
       var recordsFiltered = 0
       if (dName == "SharePreferences") {
-        val data = dataProvider.executeQuery(dName, tName, "")
+        val data = dataProvider.executeQuery(dName, tName, orderDir)
         return responseData(DataResponse(draw, data.size, data.size, data))
       } else {
         dataProvider.getTableInfo(dName, tName)?.let {
@@ -151,8 +152,6 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
           val where = if (searchSql.contains("where")) searchSql.substring(searchSql.indexOf("where") + 5, searchSql.length) else ""
           //获取查询到的数据最大数量.
           recordsTotal = dataProvider.getTableDataCount(dName, tName, where)
-          //获取排序方式
-          val orderDir = params["order[0][dir]"] ?: "asc"
           //排序列
           val orderColumn = it.fieldInfos[params["order[0][column]"]?.toInt() ?: 0].name
           //用户输入的过滤字符
@@ -182,7 +181,9 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
           if (tWhere.isNotBlank()) {
             sql += " where $tWhere"
           }
-          sql += " order by $orderColumn $orderDir"
+          if (orderDir.isNotBlank()) {
+            sql += " order by $orderColumn $orderDir"
+          }
           if (length >= 0) {
             sql += " limit $start, $length"
           }
@@ -207,15 +208,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
     val data = params["data"] ?: ""
     return if (where.isNotBlank() && data.isNotBlank()) {
       (gson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
-        val contentValues = ContentValues()
-        it.forEach {
-          when (it.type) {
-            ConstUtils.TYPE_INTEGER -> contentValues.put(it.key, it.value?.toIntOrNull())
-            ConstUtils.TYPE_REAL -> contentValues.put(it.key, it.value?.toDoubleOrNull())
-            else -> contentValues.put(it.key, it.value)
-          }
-        }
-        if (dataProvider.updateRow(dName, tName, contentValues, where)) {
+        if (dataProvider.updateRow(dName, tName, it, where)) {
           responseData(com.tlz.debugger.model.Response(data = "success"))
         } else {
           responseError(errorMsg = "没有找到匹配的数据")
@@ -242,7 +235,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
         }
       } catch (e: Exception) {
         e.printStackTrace()
-        responseError(errorMsg = "缺少删除条件")
+        responseError(errorMsg = "删除出错: ${e.message}")
       }
     } else {
       responseError(errorMsg = "缺少删除条件")

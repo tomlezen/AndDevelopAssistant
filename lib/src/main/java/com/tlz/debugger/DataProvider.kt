@@ -1,6 +1,7 @@
 package com.tlz.debugger
 
 import android.content.ContentValues
+import com.tlz.debugger.model.KeyValue
 import com.tlz.debugger.model.TableInfo
 import com.tlz.debugger.model.TableWrapper
 
@@ -44,7 +45,7 @@ interface DataProvider {
   /**
    * 更新行数据.
    */
-  fun updateRow(dName: String, tName: String, contentValues: ContentValues, where: String): Boolean
+  fun updateRow(dName: String, tName: String, content: Array<KeyValue>, where: String): Boolean
 
   /**
    * 获取表的基本信息.

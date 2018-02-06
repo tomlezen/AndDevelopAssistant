@@ -3,6 +3,7 @@ package com.tlz.debugger
 import android.content.ContentValues
 import android.content.Context
 import android.renderscript.Element
+import com.google.gson.Gson
 import com.tlz.debugger.model.KeyValue
 import com.tlz.debugger.model.TableFieldInfo
 import com.tlz.debugger.model.TableInfo
@@ -10,6 +11,7 @@ import com.tlz.debugger.model.TableWrapper
 import net.sqlcipher.Cursor
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
+import java.security.Key
 import java.util.*
 
 /**
@@ -17,7 +19,7 @@ import java.util.*
  * Data: 2018/1/27.
  * Time: 16:01.
  */
-class IDataProvider(private val ctx: Context) : DataProvider {
+class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProvider {
 
   private var database: SQLiteDatabase? = null
   private var databaseName: String = ""
@@ -41,7 +43,7 @@ class IDataProvider(private val ctx: Context) : DataProvider {
 
   override fun executeQuery(dName: String, tName: String, sql: String): List<Any> {
     val data = mutableListOf<Any>()
-    if (dName == "SharePreferences") {
+    if (dName.isPrefs()) {
       val sharePreferences = ctx.getSharedPreferences(tName, Context.MODE_PRIVATE)
       for (entry in sharePreferences.all.entries) {
         val type = when {
@@ -54,6 +56,13 @@ class IDataProvider(private val ctx: Context) : DataProvider {
           else -> ConstUtils.TYPE_TEXT
         }
         data.add(KeyValue(entry.key, entry.value?.toString() ?: "null", type))
+      }
+      if (sql.isNotBlank()) {
+        if (sql == "asc") {
+          data.sortWith(Comparator { o1, o2 -> if ((o1 as KeyValue).key > (o2 as KeyValue).key) 1 else -1 })
+        } else {
+          data.sortWith(Comparator { o1, o2 -> if ((o1 as KeyValue).key > (o2 as KeyValue).key) -1 else 1 })
+        }
       }
     } else {
       openDatabase(dName)
@@ -94,26 +103,58 @@ class IDataProvider(private val ctx: Context) : DataProvider {
   }
 
   override fun deleteRow(dName: String, tName: String, where: String): Boolean {
-    openDatabase(dName)
-    return database?.let {
-      try {
-        it.delete(tName, where, null)
-      } finally {
-        closeDatabase()
-      }
+    return if (dName.isPrefs()) {
+      ctx.getSharedPreferences(tName, Context.MODE_PRIVATE).edit().remove(where).apply()
       true
-    } ?: false
+    } else {
+      openDatabase(dName)
+      database?.let {
+        try {
+          it.delete(tName, where, null)
+        } finally {
+          closeDatabase()
+        }
+        true
+      } ?: false
+    }
   }
 
-  override fun updateRow(dName: String, tName: String, contentValues: ContentValues, where: String): Boolean {
-    openDatabase(dName)
-    return database?.let {
-      try {
-        it.update(tName, contentValues, where, null) == 1
-      } finally {
-        closeDatabase()
+  override fun updateRow(dName: String, tName: String, content: Array<KeyValue>, where: String): Boolean {
+    if (dName.isPrefs()) {
+      val editor = ctx.getSharedPreferences(tName, Context.MODE_PRIVATE).edit()
+      val keyValue = content.first()
+      when (keyValue.type) {
+        ConstUtils.TYPE_INTEGER -> editor.putInt(keyValue.key, keyValue.value!!.toInt())
+        ConstUtils.TYPE_FLOAT -> editor.putFloat(keyValue.key, keyValue.value!!.toFloat())
+        ConstUtils.TYPE_LONG -> editor.putLong(keyValue.key, keyValue.value!!.toLong())
+        ConstUtils.TYPE_BOOLEAN -> editor.putBoolean(keyValue.key, keyValue.value!!.toBoolean())
+        ConstUtils.TYPE_STRING_SET -> editor.putStringSet(keyValue.key, gson.fromJson<Array<String>>(keyValue.value, Array<String>::class.java).let {
+          val set = mutableSetOf<String>()
+          it.mapTo(set) { it }
+          set
+        })
+        else -> editor.putString(keyValue.key, keyValue.value)
       }
-    } ?: false
+      editor.apply()
+      return true
+    } else {
+      openDatabase(dName)
+      return database?.let {
+        try {
+          val contentValues = ContentValues()
+          content.forEach {
+            when (it.type) {
+              ConstUtils.TYPE_INTEGER -> contentValues.put(it.key, it.value?.toIntOrNull())
+              ConstUtils.TYPE_REAL -> contentValues.put(it.key, it.value?.toDoubleOrNull())
+              else -> contentValues.put(it.key, it.value)
+            }
+          }
+          it.update(tName, contentValues, where, null) == 1
+        } finally {
+          closeDatabase()
+        }
+      } ?: false
+    }
   }
 
   override fun getTableInfo(dName: String, tName: String): TableInfo? {
@@ -288,6 +329,8 @@ class IDataProvider(private val ctx: Context) : DataProvider {
     executeSafely { database?.close() }
     databaseOpen = false
   }
+
+  private fun String.isPrefs() = this == "SharePreferences"
 
   companion object {
     private const val DB_PAS_META_ID_PREFIX = "DB_PAS_"
