@@ -1,17 +1,24 @@
 package tomlezen.androiddebuglib
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.support.v7.app.AppCompatActivity
+import android.widget.TextView
 import tomlezen.androiddebuglib.database.CarDBHelper
 import tomlezen.androiddebuglib.database.ContactDBHelper
 import tomlezen.androiddebuglib.database.ExtTestDBHelper
 import tomlezen.androiddebuglib.database.PersonDBHelper
-import java.util.HashSet
+import java.net.Inet4Address
+import java.net.NetworkInterface
+import java.net.SocketException
+import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
+  @SuppressLint("SetTextI18n")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
@@ -78,5 +85,28 @@ class MainActivity : AppCompatActivity() {
         }
       }
     }.start()
+
+    findViewById<TextView>(R.id.tv_ip).text = "您的ip地址是：${getIp()}"
   }
+
+  private fun getIp(): String {
+    try {
+      val en = NetworkInterface.getNetworkInterfaces()
+      while (en.hasMoreElements()) {
+        val intf = en.nextElement()
+        val enumIpAddr = intf.inetAddresses
+        while (enumIpAddr.hasMoreElements()) {
+          val inetAddress = enumIpAddr.nextElement()
+          if (!inetAddress.isLoopbackAddress && inetAddress is Inet4Address) {
+            return inetAddress.getHostAddress().toString()
+          }
+        }
+      }
+    } catch (ex: SocketException) {
+      ex.printStackTrace()
+    }
+
+    return "没有获取到ip地址"
+  }
+
 }

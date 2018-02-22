@@ -2,7 +2,6 @@ package com.tlz.debugger
 
 import android.content.ContentValues
 import android.content.Context
-import android.renderscript.Element
 import com.google.gson.Gson
 import com.tlz.debugger.model.KeyValue
 import com.tlz.debugger.model.TableFieldInfo
@@ -11,7 +10,6 @@ import com.tlz.debugger.model.TableWrapper
 import net.sqlcipher.Cursor
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
-import java.security.Key
 import java.util.*
 
 /**
@@ -157,6 +155,26 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
     }
   }
 
+  override fun addRow(dName: String, tName: String, content: Array<KeyValue>): Boolean {
+    openDatabase(dName)
+    database?.let {
+      try {
+        val contentValues = ContentValues()
+        content.forEach {
+          when (it.type) {
+            ConstUtils.TYPE_INTEGER -> contentValues.put(it.key, it.value?.toIntOrNull())
+            ConstUtils.TYPE_REAL -> contentValues.put(it.key, it.value?.toDoubleOrNull())
+            else -> contentValues.put(it.key, it.value)
+          }
+        }
+        return it.insertOrThrow(tName, null, contentValues) >= 0
+      } finally {
+        closeDatabase()
+      }
+    }
+    return false
+  }
+
   override fun getTableInfo(dName: String, tName: String): TableInfo? {
     if (tableWrapperMap.isEmpty()) {
       databaseFiles.forEach { getAllTable(it.key) }
@@ -171,7 +189,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
       try {
         var sql = "select count(*) from $tName"
         if (where.isNotBlank()) {
-          sql += " where $where"
+          sql += " where $where limit 5"
         }
         cursor = it.rawQuery(sql, null)
         cursor?.let {

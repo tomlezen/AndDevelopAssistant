@@ -35,7 +35,7 @@ interface DataProvider {
   /**
    * 添加行数据.
    */
-//  fun addRow(dName: String, tName: String)
+  fun addRow(dName: String, tName: String, content: Array<KeyValue>): Boolean
 
   /**
    * 删除行数据.

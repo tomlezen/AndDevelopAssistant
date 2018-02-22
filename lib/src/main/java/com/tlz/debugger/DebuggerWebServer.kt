@@ -47,6 +47,10 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
     return response
   }
 
+  private fun response(type: String, html: String): NanoHTTPD.Response {
+    return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, type, html)
+  }
+
   private fun responseData(data: Any): NanoHTTPD.Response {
     return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, gson.toJson(data))
   }
@@ -96,6 +100,13 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
               handleUpdateRequest(it.parms)
             }
           }
+          uri.contains("/api/add") -> {
+            return if (it.parms.isEmpty() || !it.parms.containsKey("dName") || !it.parms.containsKey("tName") || !it.parms.containsKey("data")) {
+              responseError(errorMsg = "缺少查询参数")
+            } else {
+              handleAddRequest(it.parms)
+            }
+          }
         //获取应用logo
           uri == "/image/appIcon" -> {
             try {
@@ -108,7 +119,24 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
             }
           }
           else -> {
-
+            val file = ctx.readHtmlFIle(uri)
+            when {
+              uri.contains(".css") -> return response("text/css", file, "86400")
+              uri.contains(".js") -> return response("text/javascript", file, "86400")
+              uri.contains(".png") -> {
+                try {
+                  return newChunkedResponse(Response.Status.OK, "image/png", ctx.assets.open("web" + uri))
+                } catch (e: Exception) {
+                  e.printStackTrace()
+                }
+              }
+              uri.contains(".ico") -> return response("image/vnd.microsoft.icon", file)
+              uri.contains(".eot") -> return response("application/vnd.ms-fontobject", file)
+              uri.contains(".svg") -> return response("image/svg+xml", file)
+              uri.contains(".ttf") -> return response("application/x-font-ttf", file)
+              uri.contains(".woff") -> return response("application/font-woff", file)
+              uri.contains(".woff2") -> return response("font/woff2", file)
+            }
           }
         }
       }
@@ -116,7 +144,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
       e.printStackTrace()
       return responseError(501, "error: ${e.message}")
     }
-    return super.serve(session)
+    return responseHtml(ctx.readHtmlFIle("/index.html"))
   }
 
   /**
@@ -128,17 +156,9 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
       val dName = params["dName"] ?: ""
       //表名
       val tName = params["tName"] ?: ""
-      //客户端执行的查询语句不能够有排序代码
-      val searchSql = with(params["sql"] ?: "select * from $tName") {
-        if (this.contains("order by ")) {
-          this.substring(0, this.indexOf("order by"))
-        } else {
-          this
-        }
-      }
       val draw = params["draw"]?.toInt() ?: 0
-      val start = params["start"]?.toInt() ?: 0
-      val length = params["length"]?.toInt() ?: -1
+      var start = params["start"]?.toInt() ?: 0
+      var length = params["length"]?.toInt() ?: -1
       //获取排序方式
       val orderDir = params["order[0][dir]"] ?: ""
       var recordsTotal = 0
@@ -148,10 +168,38 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
         return responseData(DataResponse(draw, data.size, data.size, data))
       } else {
         dataProvider.getTableInfo(dName, tName)?.let {
+          var limitStart = 0
+          var limitLength = -1
+          var tSearchSql = params["sql"] ?: "select * from $tName"
+          //分割limit限制
+          if (tSearchSql.contains("limit")) {
+            executeSafely {
+              val index = tSearchSql.indexOf("limit")
+              val limitStr = tSearchSql.substring(index + 5, tSearchSql.length)
+              val limitParams = limitStr.split(",")
+              if (limitParams.size == 1) {
+                limitLength = limitParams.first().trim().toInt()
+                //修改查询条数
+                length = rMin(length, limitLength)
+              } else if (limitParams.size == 2) {
+                limitLength = limitParams.last().trim().toInt()
+                limitStart = limitParams.first().trim().toInt()
+                start += limitStart
+                length = rMin(length, limitLength)
+              }
+              tSearchSql = tSearchSql.substring(0, index)
+            }
+          }
+          //客户端执行的查询语句不能够有排序代码
+          val searchSql = if (tSearchSql.contains("order by ")) tSearchSql.substring(0, tSearchSql.indexOf("order by")) else tSearchSql
           //获取where条件
           val where = if (searchSql.contains("where")) searchSql.substring(searchSql.indexOf("where") + 5, searchSql.length) else ""
           //获取查询到的数据最大数量.
           recordsTotal = dataProvider.getTableDataCount(dName, tName, where)
+          if(recordsTotal - limitStart >= 0){
+            recordsTotal -= limitStart
+          }
+          recordsTotal = rMin(recordsTotal, limitLength)
           //排序列
           val orderColumn = it.fieldInfos[params["order[0][column]"]?.toInt() ?: 0].name
           //用户输入的过滤字符
@@ -172,19 +220,24 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
           }
           //获取过滤后的数据最大数量
           recordsFiltered = if (filterWhere.isNotBlank()) {
-            dataProvider.getTableDataCount(dName, tName, "$where $filterWhere")
+            var count = dataProvider.getTableDataCount(dName, tName, if (where.isBlank()) filterWhere else "$where and ($filterWhere)")
+            if(count - limitStart >= 0){
+              count -= limitStart
+            }
+            rMin(count, limitLength)
           } else {
             recordsTotal
           }
           var sql = "select * from $tName"
-          val tWhere = where + filterWhere
+          //拼接where条件
+          val tWhere = if (where.isNotBlank() && filterWhere.isNotBlank()) ("$where and ($filterWhere)") else if (where.isNotBlank()) where else filterWhere
           if (tWhere.isNotBlank()) {
             sql += " where $tWhere"
           }
           if (orderDir.isNotBlank()) {
             sql += " order by $orderColumn $orderDir"
           }
-          if (length >= 0) {
+          if (length >= 0 || length == -1) {
             sql += " limit $start, $length"
           }
           val data = dataProvider.executeQuery(dName, tName, sql)
@@ -245,9 +298,26 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
   /**
    * 处理添加数据请求.
    */
-//  private fun handleAddRequest(params: Map<String, String>): NanoHTTPD.Response {
-//
-//  }
+  private fun handleAddRequest(params: Map<String, String>): NanoHTTPD.Response {
+    val dName = params["dName"] ?: ""
+    val tName = params["tName"] ?: ""
+    val data = params["data"] ?: ""
+    return if (data.isNotBlank()) {
+      (gson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
+        if (dataProvider.addRow(dName, tName, it)) {
+          responseData(com.tlz.debugger.model.Response(data = "success"))
+        } else {
+          responseError(errorMsg = "添加数据失败数据")
+        }
+      } ?: responseError(errorMsg = "数据解析失败")
+    } else {
+      responseError(errorMsg = "缺少添加数据内容")
+    }
+  }
+
+  private fun rMin(v1: Int, v2: Int): Int{
+    return if(v2 == - 1 || v2 > v1) v1 else v2
+  }
 
 
   companion object {
