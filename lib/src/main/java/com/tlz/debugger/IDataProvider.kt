@@ -20,7 +20,6 @@ import java.util.*
 class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProvider {
 
   private var database: SQLiteDatabase? = null
-  private var databaseName: String = ""
   private var databaseOpen = false
 
   private var tableWrapperMap = mutableMapOf<String, TableWrapper>()
@@ -31,6 +30,10 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
     val data = mutableListOf<String>()
     databaseFiles.keys.mapTo(data) { it }
     return data
+  }
+
+  override fun getDatabaseFile(dName: String): File? {
+    return databaseFiles[dName]?.first
   }
 
   override fun getAllTable(databaseName: String): TableWrapper {
@@ -189,7 +192,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
       try {
         var sql = "select count(*) from $tName"
         if (where.isNotBlank()) {
-          sql += " where $where limit 5"
+          sql += " where $where"
         }
         cursor = it.rawQuery(sql, null)
         cursor?.let {

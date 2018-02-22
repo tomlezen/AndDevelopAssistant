@@ -1,9 +1,9 @@
 package com.tlz.debugger
 
-import android.content.ContentValues
 import com.tlz.debugger.model.KeyValue
 import com.tlz.debugger.model.TableInfo
 import com.tlz.debugger.model.TableWrapper
+import java.io.File
 
 /**
  * Created by tomlezen.
@@ -16,6 +16,11 @@ interface DataProvider {
    * 获取数据库列表.
    */
   fun getDatabaseList(): List<String>
+
+  /**
+   * 获取数据库文件.
+   */
+  fun getDatabaseFile(dName: String): File?
 
   /**
    * 获取数据库中所有表.

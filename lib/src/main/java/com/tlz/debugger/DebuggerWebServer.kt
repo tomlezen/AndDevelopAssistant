@@ -6,10 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.tlz.debugger.model.AppInfo
-import com.tlz.debugger.model.DataResponse
-import com.tlz.debugger.model.Db
-import com.tlz.debugger.model.KeyValue
+import com.tlz.debugger.model.*
 import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -107,6 +104,26 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
               handleAddRequest(it.parms)
             }
           }
+          uri.contains("/api/execute") -> {
+            return if (it.parms.isEmpty() || !it.parms.containsKey("dName") || !it.parms.containsKey("sql")) {
+              responseError(errorMsg = "缺少查询参数")
+            } else {
+              handleExecuteRequest(it.parms)
+            }
+          }
+          uri.contains("/api/download") -> {
+            val dName = uri.split("/").last().trim()
+            val file = dataProvider.getDatabaseFile(dName)
+            if (file == null) {
+              return responseError(errorMsg = "不存在该数据库")
+            } else {
+              try {
+                return newChunkedResponse(Response.Status.OK, "application/octet-stream", file.inputStream())
+              } catch (e: Exception) {
+                e.printStackTrace()
+              }
+            }
+          }
         //获取应用logo
           uri == "/image/appIcon" -> {
             try {
@@ -196,7 +213,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
           val where = if (searchSql.contains("where")) searchSql.substring(searchSql.indexOf("where") + 5, searchSql.length) else ""
           //获取查询到的数据最大数量.
           recordsTotal = dataProvider.getTableDataCount(dName, tName, where)
-          if(recordsTotal - limitStart >= 0){
+          if (recordsTotal - limitStart >= 0) {
             recordsTotal -= limitStart
           }
           recordsTotal = rMin(recordsTotal, limitLength)
@@ -221,7 +238,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
           //获取过滤后的数据最大数量
           recordsFiltered = if (filterWhere.isNotBlank()) {
             var count = dataProvider.getTableDataCount(dName, tName, if (where.isBlank()) filterWhere else "$where and ($filterWhere)")
-            if(count - limitStart >= 0){
+            if (count - limitStart >= 0) {
               count -= limitStart
             }
             rMin(count, limitLength)
@@ -315,8 +332,25 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
     }
   }
 
-  private fun rMin(v1: Int, v2: Int): Int{
-    return if(v2 == - 1 || v2 > v1) v1 else v2
+  /**
+   * 处理数据库其它语句执行.
+   */
+  private fun handleExecuteRequest(params: Map<String, String>): NanoHTTPD.Response {
+    val dName = params.getValue("dName")
+    val sql = params.getValue("sql")
+    return if (sql.isNotBlank()) {
+      if (dataProvider.executeSql(dName, sql)) {
+        responseData(com.tlz.debugger.model.Response(data = "success"))
+      } else {
+        responseError(errorMsg = "sql语句执行失败，请检查后再重试")
+      }
+    } else {
+      responseError(errorMsg = "缺少执行sql语句参数")
+    }
+  }
+
+  private fun rMin(v1: Int, v2: Int): Int {
+    return if (v2 == -1 || v2 > v1) v1 else v2
   }
 
 
