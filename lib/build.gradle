@@ -2,6 +2,8 @@ apply plugin: 'com.android.library'
 
 apply plugin: 'kotlin-android'
 
+apply plugin: 'com.novoda.bintray-release'
+
 android {
     compileSdkVersion 26
 
@@ -24,6 +26,9 @@ android {
 
 }
 
+sourceCompatibility = "1.6"
+targetCompatibility = "1.6"
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
@@ -34,4 +39,26 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+}
+
+buildscript{
+    tasks.withType(Javadoc) {
+        failOnError false
+        options{
+            encoding "UTF-8"
+            charSet 'UTF-8'
+            links "http://docs.oracle.com/javase/7/docs/api"
+        }
+    }
+}
+
+publish {
+    artifactId = parent.ext.artifactId
+    autoPublish = parent.ext.autoPublish
+    desc = parent.ext.desc
+    groupId = parent.ext.groupId
+    publishVersion = parent.ext.publishVersion
+    uploadName = parent.ext.uploadName
+    website = parent.ext.website
+    repoName = parent.ext.repoName
 }

@@ -6,11 +6,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.tlz.debugger.model.*
+import com.tlz.debugger.model.AppInfo
+import com.tlz.debugger.model.DataResponse
+import com.tlz.debugger.model.Db
+import com.tlz.debugger.model.KeyValue
 import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-
 
 /**
  * Created by tomlezen.
@@ -136,23 +138,25 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
             }
           }
           else -> {
-            val file = ctx.readHtmlFIle(uri)
-            when {
-              uri.contains(".css") -> return response("text/css", file, "86400")
-              uri.contains(".js") -> return response("text/javascript", file, "86400")
-              uri.contains(".png") -> {
-                try {
-                  return newChunkedResponse(Response.Status.OK, "image/png", ctx.assets.open("web" + uri))
-                } catch (e: Exception) {
-                  e.printStackTrace()
+            if(uri != "/") {
+              val file = uri.readHtml(ctx)
+              when {
+                uri.contains(".css") -> return response("text/css", file, "86400")
+                uri.contains(".js") -> return response("text/javascript", file, "86400")
+                uri.contains(".png") -> {
+                  try {
+                    return newChunkedResponse(Response.Status.OK, "image/png", ctx.assets.open("web" + uri))
+                  } catch (e: Exception) {
+                    e.printStackTrace()
+                  }
                 }
+                uri.contains(".ico") -> return response("image/vnd.microsoft.icon", file)
+                uri.contains(".eot") -> return response("application/vnd.ms-fontobject", file)
+                uri.contains(".svg") -> return response("image/svg+xml", file)
+                uri.contains(".ttf") -> return response("application/x-font-ttf", file)
+                uri.contains(".woff") -> return response("application/font-woff", file)
+                uri.contains(".woff2") -> return response("font/woff2", file)
               }
-              uri.contains(".ico") -> return response("image/vnd.microsoft.icon", file)
-              uri.contains(".eot") -> return response("application/vnd.ms-fontobject", file)
-              uri.contains(".svg") -> return response("image/svg+xml", file)
-              uri.contains(".ttf") -> return response("application/x-font-ttf", file)
-              uri.contains(".woff") -> return response("application/font-woff", file)
-              uri.contains(".woff2") -> return response("font/woff2", file)
             }
           }
         }
@@ -161,7 +165,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
       e.printStackTrace()
       return responseError(501, "error: ${e.message}")
     }
-    return responseHtml(ctx.readHtmlFIle("/index.html"))
+    return responseHtml("/index.html".readHtml(ctx))
   }
 
   /**
@@ -369,7 +373,12 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
      * 读取设置的端口号.
      */
     private fun readPort(ctx: Context): Int {
-      return DEF_PORT
+      return try {
+        ctx.metaDataInt("DEBUG_PORT", DEF_PORT)
+      }catch (e: Exception){
+        e.printStackTrace()
+        DEF_PORT
+      }
     }
   }
 
