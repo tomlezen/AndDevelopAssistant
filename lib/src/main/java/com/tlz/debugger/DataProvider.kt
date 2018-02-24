@@ -4,6 +4,7 @@ import com.tlz.debugger.model.KeyValue
 import com.tlz.debugger.model.TableInfo
 import com.tlz.debugger.model.TableWrapper
 import java.io.File
+import android.util.Pair
 
 /**
  * Created by tomlezen.
@@ -11,6 +12,8 @@ import java.io.File
  * Time: 16:00.
  */
 interface DataProvider {
+
+  fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>)
 
   /**
    * 获取数据库列表.

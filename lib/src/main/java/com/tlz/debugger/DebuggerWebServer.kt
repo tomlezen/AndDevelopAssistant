@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.tlz.debugger.model.AppInfo
@@ -13,13 +14,18 @@ import com.tlz.debugger.model.KeyValue
 import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
+import android.util.Pair
+import java.net.Inet4Address
+import java.net.NetworkInterface
+import java.net.SocketException
 
 /**
  * Created by tomlezen.
  * Data: 2018/1/27.
  * Time: 15:00.
  */
-class DebuggerWebServer private constructor(private val ctx: Context, port: Int) : NanoHTTPD(port) {
+class DebuggerWebServer private constructor(private val ctx: Context, private val port: Int) : NanoHTTPD(port) {
 
   private val tag = DebuggerWebServer::class.java.canonicalName
 
@@ -36,7 +42,12 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
     if (!isRunning) {
       isRunning = true
       start(10000)
+      Log.e("DebuggerWebServer", "address: ${getPhoneIp()}:$port")
     }
+  }
+
+  fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
+    dataProvider.setCustomDatabaseFiles(files)
   }
 
   private fun response(type: String, html: String, cacheTime: String): NanoHTTPD.Response {
@@ -137,26 +148,33 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
               e.printStackTrace()
             }
           }
+          uri.contains(".png") -> {
+            try {
+              return newChunkedResponse(Response.Status.OK, "image/png", ctx.assets.open("web" + uri))
+            } catch (e: Exception) {
+              e.printStackTrace()
+            }
+          }
+          uri.contains(".ico") -> {
+            try {
+              return newChunkedResponse(Response.Status.OK, "image/vnd.microsoft.icon", ctx.assets.open("web" + uri))
+            } catch (e: Exception) {
+              e.printStackTrace()
+            }
+          }
           else -> {
-            if(uri != "/") {
+            try {
               val file = uri.readHtml(ctx)
               when {
                 uri.contains(".css") -> return response("text/css", file, "86400")
                 uri.contains(".js") -> return response("text/javascript", file, "86400")
-                uri.contains(".png") -> {
-                  try {
-                    return newChunkedResponse(Response.Status.OK, "image/png", ctx.assets.open("web" + uri))
-                  } catch (e: Exception) {
-                    e.printStackTrace()
-                  }
-                }
-                uri.contains(".ico") -> return response("image/vnd.microsoft.icon", file)
                 uri.contains(".eot") -> return response("application/vnd.ms-fontobject", file)
                 uri.contains(".svg") -> return response("image/svg+xml", file)
                 uri.contains(".ttf") -> return response("application/x-font-ttf", file)
                 uri.contains(".woff") -> return response("application/font-woff", file)
                 uri.contains(".woff2") -> return response("font/woff2", file)
               }
+            } catch (e: Exception) {
             }
           }
         }
@@ -357,16 +375,42 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
     return if (v2 == -1 || v2 > v1) v1 else v2
   }
 
+  /**
+   * 获取当前手机ip地址.
+   */
+  private fun getPhoneIp(): String {
+    try {
+      val en = NetworkInterface.getNetworkInterfaces()
+      while (en.hasMoreElements()) {
+        val intf = en.nextElement()
+        val enumIpAddr = intf.inetAddresses
+        while (enumIpAddr.hasMoreElements()) {
+          val inetAddress = enumIpAddr.nextElement()
+          if (!inetAddress.isLoopbackAddress && inetAddress is Inet4Address) {
+            return inetAddress.getHostAddress().toString()
+          }
+        }
+      }
+    } catch (ex: SocketException) {
+      ex.printStackTrace()
+    }
+
+    return "没有获取到ip地址"
+  }
 
   companion object {
     private const val DEF_PORT = 10000
 
     @SuppressLint("StaticFieldLeak")
-    internal var instance: DebuggerWebServer? = null
+    private var instance: DebuggerWebServer? = null
 
     fun start(ctx: Context) {
       instance = instance ?: DebuggerWebServer(ctx, readPort(ctx))
       instance?.startServer()
+    }
+
+    fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
+      instance?.setCustomDatabaseFiles(files)
     }
 
     /**
@@ -375,7 +419,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, port: Int)
     private fun readPort(ctx: Context): Int {
       return try {
         ctx.metaDataInt("DEBUG_PORT", DEF_PORT)
-      }catch (e: Exception){
+      } catch (e: Exception) {
         e.printStackTrace()
         DEF_PORT
       }

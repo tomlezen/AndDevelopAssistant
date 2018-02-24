@@ -1,5 +1,7 @@
 package com.tlz.debugger.model
 
+import android.support.annotation.Keep
+
 /**
  * Created by tomlezen.
  * Data: 2018/1/27.
@@ -8,4 +10,5 @@ package com.tlz.debugger.model
  * @param data 发送的具体内容.
  * @param errMsg 错误信息.
  */
+@Keep
 class Response(val status: Int = 200, val data: Any? = null, val errMsg: String = "")

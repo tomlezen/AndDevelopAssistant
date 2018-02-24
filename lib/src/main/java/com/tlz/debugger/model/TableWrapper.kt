@@ -1,5 +1,7 @@
 package com.tlz.debugger.model
 
+import android.support.annotation.Keep
+
 /**
  * Created by tomlezen.
  * Data: 2018/1/27.
@@ -7,4 +9,5 @@ package com.tlz.debugger.model
  * @param verison 数据库版本.
  * @param tables 表.
  */
+@Keep
 class TableWrapper(val verison: Int, val tables: List<TableInfo>)

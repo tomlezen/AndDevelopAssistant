@@ -11,6 +11,7 @@ import net.sqlcipher.Cursor
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
 import java.util.*
+import android.util.Pair
 
 /**
  * Created by tomlezen.
@@ -24,7 +25,11 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
 
   private var tableWrapperMap = mutableMapOf<String, TableWrapper>()
 
-  private val databaseFiles: Map<String, Pair<File, String>> by lazy { initDatabaseFiles() }
+  private val databaseFiles: MutableMap<String, Pair<File, String>> by lazy { initDatabaseFiles() }
+
+  override fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
+    databaseFiles.putAll(files)
+  }
 
   override fun getDatabaseList(): List<String> {
     val data = mutableListOf<String>()
@@ -211,7 +216,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
   /**
    * 初始化数据库文件.
    */
-  private fun initDatabaseFiles(): Map<String, Pair<File, String>> {
+  private fun initDatabaseFiles(): MutableMap<String, Pair<File, String>> {
     val databaseFiles = HashMap<String, Pair<File, String>>()
     try {
       for (databaseName in ctx.databaseList()) {

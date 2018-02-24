@@ -17,8 +17,8 @@
             </intent-filter>
         </activity>
 
-        <meta-data android:name="DB_PAS_PERSON" android:value="a_password" />
-        <meta-data android:name="DEBUG_PORT" android:value="10001" />
+        <!--<meta-data android:name="DB_PAS_PERSON" android:value="a_password" />-->
+        <!--<meta-data android:name="DEBUG_PORT" android:value="10001" />-->
 
     </application>
 

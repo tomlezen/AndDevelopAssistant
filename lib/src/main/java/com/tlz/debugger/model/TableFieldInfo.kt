@@ -1,5 +1,7 @@
 package com.tlz.debugger.model
 
+import android.support.annotation.Keep
+
 /**
  * Created by tomlezen.
  * Data: 2018/2/1.
@@ -10,4 +12,5 @@ package com.tlz.debugger.model
  * @param nullable 是否可空.
  * @param defValue 默认值.
  */
+@Keep
 data class TableFieldInfo(val name: String, val type: String, val isPrimaryKey: Boolean = false, val nullable: Boolean, val defValue: String?)

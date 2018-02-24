@@ -1,5 +1,7 @@
 package com.tlz.debugger.model
 
+import android.support.annotation.Keep
+
 /**
  * Created by tomlezen.
  * Data: 2018/1/30.
@@ -10,4 +12,5 @@ package com.tlz.debugger.model
  * @param verCode 版本号.
  * @param dbs 应用数据库列表.
  */
+@Keep
 class AppInfo(val name: String, val pkg: String, val verName: String, val verCode: Int, val dbs: List<Db>)

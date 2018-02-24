@@ -3,18 +3,18 @@ package tomlezen.androiddebuglib
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.support.v7.app.AppCompatActivity
 import android.widget.TextView
-import tomlezen.androiddebuglib.database.CarDBHelper
-import tomlezen.androiddebuglib.database.ContactDBHelper
-import tomlezen.androiddebuglib.database.ExtTestDBHelper
-import tomlezen.androiddebuglib.database.PersonDBHelper
+import tomlezen.androiddebuglib.database.CustomDB
+import tomlezen.androiddebuglib.database.TestOneDb
+import tomlezen.androiddebuglib.database.TestThreeDb
+import tomlezen.androiddebuglib.database.TestTwoDb
+import java.io.File
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.util.*
-
+import android.util.Pair
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,66 +22,39 @@ class MainActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
-
     Thread{
-      val stringSet = HashSet<String>()
-      stringSet.add("SetOne")
-      stringSet.add("SetTwo")
-      stringSet.add("SetThree")
+      val prefsOne = getSharedPreferences("TestOne", Context.MODE_PRIVATE)
+      val prefsTwo = getSharedPreferences("TestTwo", Context.MODE_PRIVATE)
 
-      val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+      prefsOne.edit().apply{
+        putString("testString", "string")
+        putInt("testInt", 1)
+        putLong("testLong", System.currentTimeMillis())
+        putFloat("testFloat", Random().nextFloat())
+        putBoolean("testBoolean", false)
+        putStringSet("testStringSet", setOf("value1", "value2", "value2"))
+      }.apply()
 
-      val prefsOne = getSharedPreferences("countPrefOne", Context.MODE_PRIVATE)
-      val prefsTwo = getSharedPreferences("countPrefTwo", Context.MODE_PRIVATE)
+      prefsTwo.edit().apply{
+        putString("test1", "one").commit()
+        putString("test2", "two").commit()
+      }.apply()
 
-      sharedPreferences.edit().putString("testOne", "one").commit()
-      sharedPreferences.edit().putInt("testTwo", 2).commit()
-      sharedPreferences.edit().putLong("testThree", 100000L).commit()
-      sharedPreferences.edit().putFloat("testFour", 3.01f).commit()
-      sharedPreferences.edit().putBoolean("testFive", true).commit()
-      sharedPreferences.edit().putStringSet("testSix", stringSet).commit()
+      CustomDB.create(this)
+      TestOneDb.create(this)
+      TestTwoDb.create(this)
+      TestThreeDb.create(this)
 
-      prefsOne.edit().putString("testOneNew", "one").commit()
-
-      prefsTwo.edit().putString("testTwoNew", "two").commit()
-
-      val contactDBHelper = ContactDBHelper(applicationContext)
-      if (contactDBHelper.count() == 0) {
-        for (i in 0..99) {
-          val name = "name_" + i
-          val phone = "phone_" + i
-          val email = "email_" + i
-          val street = "street_" + i
-          val place = "place_" + i
-          contactDBHelper.insertContact(name, phone, email, street, null)
-        }
-      }
-
-      val carDBHelper = CarDBHelper(applicationContext)
-      if (carDBHelper.count() == 0) {
-        for (i in 0..49) {
-          val name = "name_" + i
-          val color = "RED"
-          val mileage = i + 10.45f
-          carDBHelper.insertCar(name, color, mileage)
-        }
-      }
-
-      val extTestDBHelper = ExtTestDBHelper(applicationContext)
-      if (extTestDBHelper.count() == 0) {
-        (0..19)
-            .map { "value_" + it }
-            .forEach { extTestDBHelper.insertTest(it) }
-      }
-
-      // Create Person encrypted database
-      val personDBHelper = PersonDBHelper(applicationContext)
-      if (personDBHelper.count() == 0) {
-        for (i in 0..99) {
-          val firstName = PersonDBHelper.PERSON_COLUMN_FIRST_NAME + "_" + i
-          val lastName = PersonDBHelper.PERSON_COLUMN_LAST_NAME + "_" + i
-          val address = PersonDBHelper.PERSON_COLUMN_ADDRESS + "_" + i
-          personDBHelper.insertPerson(firstName, lastName, address)
+      //初始化自定义数据库文件
+      if (BuildConfig.DEBUG) {
+        try {
+          val initializer = Class.forName("com.tlz.debugger.Initializer")
+          val method = initializer.getMethod("customDatabaseFiles", Map::class.java)
+          val customDatabaseFiles = HashMap<String, Pair<File, String>>()
+          customDatabaseFiles.put("Custom.db", Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), ""))
+          method.invoke(null, customDatabaseFiles)
+        } catch (e: Exception) {
+          e.printStackTrace()
         }
       }
     }.start()

@@ -15,7 +15,7 @@ import com.tlz.debugger.model.Response
  */
 internal fun Context.metaData(key: String): String = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getString(key) ?: ""
 
-internal fun Context.metaDataInt(key: String, default: Int = 0): Int = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getInt(key) ?: default
+internal fun Context.metaDataInt(key: String, default: Int = 0): Int = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getInt(key, default) ?: default
 
 /**
  * 读取html文件.
