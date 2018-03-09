@@ -42,7 +42,8 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
     if (!isRunning) {
       isRunning = true
       start(10000)
-      Log.e("DebuggerWebServer", "address: ${getPhoneIp()}:$port")
+      serverAddress = "${Initializer.getPhoneIp()}:$port"
+      Log.e(tag, "address: $serverAddress")
     }
   }
 
@@ -375,34 +376,13 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
     return if (v2 == -1 || v2 > v1) v1 else v2
   }
 
-  /**
-   * 获取当前手机ip地址.
-   */
-  private fun getPhoneIp(): String {
-    try {
-      val en = NetworkInterface.getNetworkInterfaces()
-      while (en.hasMoreElements()) {
-        val intf = en.nextElement()
-        val enumIpAddr = intf.inetAddresses
-        while (enumIpAddr.hasMoreElements()) {
-          val inetAddress = enumIpAddr.nextElement()
-          if (!inetAddress.isLoopbackAddress && inetAddress is Inet4Address) {
-            return inetAddress.getHostAddress().toString()
-          }
-        }
-      }
-    } catch (ex: SocketException) {
-      ex.printStackTrace()
-    }
-
-    return "没有获取到ip地址"
-  }
-
   companion object {
     private const val DEF_PORT = 10000
 
     @SuppressLint("StaticFieldLeak")
     private var instance: DebuggerWebServer? = null
+
+    var serverAddress: String = ""
 
     fun start(ctx: Context) {
       instance = instance ?: DebuggerWebServer(ctx, readPort(ctx))

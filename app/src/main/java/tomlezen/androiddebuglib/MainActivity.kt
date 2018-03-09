@@ -4,17 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Pair
 import android.widget.TextView
 import tomlezen.androiddebuglib.database.CustomDB
 import tomlezen.androiddebuglib.database.TestOneDb
 import tomlezen.androiddebuglib.database.TestThreeDb
 import tomlezen.androiddebuglib.database.TestTwoDb
 import java.io.File
-import java.net.Inet4Address
-import java.net.NetworkInterface
-import java.net.SocketException
 import java.util.*
-import android.util.Pair
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,42 +41,23 @@ class MainActivity : AppCompatActivity() {
       TestOneDb.create(this)
       TestTwoDb.create(this)
       TestThreeDb.create(this)
-
-      //初始化自定义数据库文件
-      if (BuildConfig.DEBUG) {
-        try {
-          val initializer = Class.forName("com.tlz.debugger.Initializer")
-          val method = initializer.getMethod("customDatabaseFiles", Map::class.java)
-          val customDatabaseFiles = HashMap<String, Pair<File, String>>()
-          customDatabaseFiles.put("Custom.db", Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), ""))
-          method.invoke(null, customDatabaseFiles)
-        } catch (e: Exception) {
-          e.printStackTrace()
-        }
-      }
     }.start()
 
-    findViewById<TextView>(R.id.tv_ip).text = "您的ip地址是：${getIp()}"
-  }
-
-  private fun getIp(): String {
-    try {
-      val en = NetworkInterface.getNetworkInterfaces()
-      while (en.hasMoreElements()) {
-        val intf = en.nextElement()
-        val enumIpAddr = intf.inetAddresses
-        while (enumIpAddr.hasMoreElements()) {
-          val inetAddress = enumIpAddr.nextElement()
-          if (!inetAddress.isLoopbackAddress && inetAddress is Inet4Address) {
-            return inetAddress.getHostAddress().toString()
-          }
-        }
+    if (BuildConfig.DEBUG) {
+      try {
+        //初始化自定义数据库文件
+        val initializer = Class.forName("com.tlz.debugger.Initializer")
+        val method = initializer.getMethod("customDatabaseFiles", Map::class.java)
+        val customDatabaseFiles = HashMap<String, Pair<File, String>>()
+        customDatabaseFiles.put("Custom.db", Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), ""))
+        method.invoke(null, customDatabaseFiles)
+        //获取服务端地址
+        val serverAddressMethod = initializer.getMethod("getServerAddress")
+        findViewById<TextView>(R.id.tv_ip).text = "服务器地址：${serverAddressMethod.invoke(null)}"
+      } catch (e: Exception) {
+        e.printStackTrace()
       }
-    } catch (ex: SocketException) {
-      ex.printStackTrace()
     }
-
-    return "没有获取到ip地址"
   }
 
 }

@@ -81,7 +81,11 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
             while (cur.moveToNext()) {
               val columnData = mutableListOf<String>()
               (0 until columnCount).forEach {
-                columnData.add(cur.getString(it) ?: "null")
+                try {
+                  columnData.add(cur.getString(it) ?: "null")
+                }catch (e: Exception){
+                  columnData.add(cur.getBlob(it)?.contentToString() ?: "null")
+                }
               }
               data.add(columnData)
             }
@@ -230,7 +234,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
     }
 
     //最后加载SharePreferences
-    databaseFiles.put(ConstUtils.PREFS, Pair(File(""), ""))
+    databaseFiles[ConstUtils.PREFS] = Pair(File(""), "")
 
     return databaseFiles
   }
