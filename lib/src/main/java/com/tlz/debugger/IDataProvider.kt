@@ -43,7 +43,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
 
   override fun getAllTable(databaseName: String): TableWrapper {
     val wrapper = if (databaseName == ConstUtils.PREFS) getSpTags() else getDatabaseTables(databaseName)
-    tableWrapperMap.put(databaseName, wrapper)
+    tableWrapperMap[databaseName] = wrapper
     return wrapper
   }
 
@@ -226,7 +226,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
       for (databaseName in ctx.databaseList()) {
         if (!databaseName.contains("-journal")) {
           val password = getDatabasePassword(databaseName)
-          databaseFiles.put(databaseName, Pair(ctx.getDatabasePath(databaseName), password))
+          databaseFiles[databaseName] = Pair(ctx.getDatabasePath(databaseName), password)
         }
       }
     } catch (e: Exception) {

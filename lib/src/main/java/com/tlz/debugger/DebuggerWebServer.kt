@@ -210,7 +210,8 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
         dataProvider.getTableInfo(dName, tName)?.let {
           var limitStart = 0
           var limitLength = -1
-          var tSearchSql = params["sql"] ?: "select * from $tName"
+          val originalSql = params["sql"] ?: "select * from $tName"
+          var tSearchSql = originalSql
           //分割limit限制
           if (tSearchSql.contains("limit")) {
             executeSafely {
@@ -268,7 +269,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
           } else {
             recordsTotal
           }
-          var sql = "select * from $tName"
+          var sql = "select ${originalSql.substring(originalSql.indexOf("select") + 6, originalSql.indexOf("from"))} from $tName"
           //拼接where条件
           val tWhere = if (where.isNotBlank() && filterWhere.isNotBlank()) ("$where and ($filterWhere)") else if (where.isNotBlank()) where else filterWhere
           if (tWhere.isNotBlank()) {
