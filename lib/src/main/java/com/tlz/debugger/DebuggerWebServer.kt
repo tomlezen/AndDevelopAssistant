@@ -16,9 +16,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import android.util.Pair
-import java.net.Inet4Address
-import java.net.NetworkInterface
-import java.net.SocketException
 
 /**
  * Created by tomlezen.
@@ -151,14 +148,14 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
           }
           uri.contains(".png") -> {
             try {
-              return newChunkedResponse(Response.Status.OK, "image/png", ctx.assets.open("web" + uri))
+              return newChunkedResponse(Response.Status.OK, "image/png", ctx.assets.open("web2018_3_15" + uri))
             } catch (e: Exception) {
               e.printStackTrace()
             }
           }
           uri.contains(".ico") -> {
             try {
-              return newChunkedResponse(Response.Status.OK, "image/vnd.microsoft.icon", ctx.assets.open("web" + uri))
+              return newChunkedResponse(Response.Status.OK, "image/vnd.microsoft.icon", ctx.assets.open("web2018_3_15" + uri))
             } catch (e: Exception) {
               e.printStackTrace()
             }
