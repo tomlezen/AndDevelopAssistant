@@ -20,7 +20,7 @@ internal fun Context.metaDataInt(key: String, default: Int = 0): Int = packageMa
 /**
  * 读取html文件.
  */
-internal fun String.readHtml(ctx: Context): String = ctx.assets.open("web$this").bufferedReader().readText()
+internal fun String.readHtml(ctx: Context): String = ctx.assets.open("web2018_3_15$this").bufferedReader().readText()
 
 /**
  * 执行代码并捕捉异常
