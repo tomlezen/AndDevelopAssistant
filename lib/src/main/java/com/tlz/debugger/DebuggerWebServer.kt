@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import android.util.Pair
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.tlz.debugger.model.AppInfo
@@ -15,7 +16,6 @@ import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import android.util.Pair
 
 /**
  * Created by tomlezen.
@@ -27,7 +27,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
   private val tag = DebuggerWebServer::class.java.canonicalName
 
   private val gson: Gson by lazy { GsonBuilder().create() }
-  private val dataProvider: DataProvider by lazy { IDataProvider(ctx, gson) }
+  private val dataProvider: DataProvider by lazy { DataProviderImpl(ctx, gson) }
 
   /** web服务器是否运行. */
   private var isRunning = false
@@ -91,7 +91,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
             return if (it.parms.isEmpty() || !it.parms.containsKey("sql") || !it.parms.containsKey("dName") || !it.parms.containsKey("tName")) {
               responseError(errorMsg = "缺少查询参数")
             } else {
-              handleDbDataRequest(it.parms)
+              handleDbDataRequest2(it.parms)
             }
           }
           uri.contains("/api/del") -> {
@@ -184,20 +184,22 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
     return responseHtml("/index.html".readHtml(ctx))
   }
 
-  /**
-   * 处理数据库数据查询请求.
-   */
-  private fun handleDbDataRequest(params: Map<String, String>): NanoHTTPD.Response {
+  private fun handleDbDataRequest2(params: Map<String, String>): NanoHTTPD.Response {
     try {
       //数据库名
       val dName = params["dName"] ?: ""
       //表名
       val tName = params["tName"] ?: ""
       val draw = params["draw"]?.toInt() ?: 0
-      var start = params["start"]?.toInt() ?: 0
-      var length = params["length"]?.toInt() ?: -1
+      val pageSize = params["pageSize"]?.toInt() ?: 10
+      val pageIndex = params["pageIndex"]?.toInt() ?: 1
+      var length = pageSize
+      var start = pageSize * (pageIndex - 1)
+      val tabInfo = dataProvider.getTableInfo(dName, tName)
+      // 获取排序列
+      val orderColumn = tabInfo?.fieldInfos?.find { params.containsKey(it.name) }?.name ?: ""
       //获取排序方式
-      val orderDir = params["order[0][dir]"] ?: ""
+      val orderDir = params[orderColumn] ?: ""
       var recordsTotal = 0
       var recordsFiltered = 0
       if (dName == "SharePreferences") {
@@ -238,14 +240,12 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
             recordsTotal -= limitStart
           }
           recordsTotal = rMin(recordsTotal, limitLength)
-          //排序列
-          val orderColumn = it.fieldInfos[params["order[0][column]"]?.toInt() ?: 0].name
           //用户输入的过滤字符
-          val filterValue = params["search[value]"]
+          val filterValue = params["search"]
           val filterList = mutableListOf<String>()
           if (!filterValue.isNullOrBlank()) {
-            it.fieldInfos.forEach {
-              filterList.add("${it.name} like '%$filterValue%'")
+            it.fieldInfos.forEach { fieldInfo ->
+              filterList.add("${fieldInfo.name} like '%$filterValue%'")
             }
           }
           //拼接过滤条件
@@ -253,7 +253,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
           if (filterList.size == 1) {
             filterWhere = filterList[0]
           } else if (filterList.isNotEmpty()) {
-            filterList.forEach { filterWhere += "$it or " }
+            filterList.forEach { filter ->  filterWhere += "$filter or " }
             filterWhere = filterWhere.substring(0, filterWhere.length - 3)
           }
           //获取过滤后的数据最大数量
@@ -272,14 +272,14 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
           if (tWhere.isNotBlank()) {
             sql += " where $tWhere"
           }
-          if (orderDir.isNotBlank()) {
+          if (orderColumn.isNotBlank() && orderDir.isNotBlank()) {
             sql += " order by $orderColumn $orderDir"
           }
           if (length >= 0 || length == -1) {
             sql += " limit $start, $length"
           }
           val data = dataProvider.executeQuery(dName, tName, sql)
-          return responseData(DataResponse(draw, recordsTotal, recordsFiltered, data))
+          return responseData(DataResponse(draw, if(recordsFiltered != 0) recordsFiltered else recordsTotal, recordsFiltered, data))
         }
       }
       return responseData(DataResponse(draw, recordsTotal, recordsFiltered, mutableListOf(), "没有找到${dName}数据库下的${tName}表"))

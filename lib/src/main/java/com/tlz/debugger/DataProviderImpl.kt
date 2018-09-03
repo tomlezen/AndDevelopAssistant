@@ -18,7 +18,7 @@ import android.util.Pair
  * Data: 2018/1/27.
  * Time: 16:01.
  */
-class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProvider {
+class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataProvider {
 
   private var database: SQLiteDatabase? = null
   private var databaseOpen = false
@@ -72,19 +72,19 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
       }
     } else {
       openDatabase(dName)
-      database?.let {
+      database?.let { db ->
         var cursor: Cursor? = null
         try {
-          cursor = it.rawQuery(sql, null)
+          cursor = db.rawQuery(sql, null)
           cursor?.let { cur ->
             val columnCount = cur.columnCount
             while (cur.moveToNext()) {
-              val columnData = mutableListOf<String>()
+              val columnData = mutableMapOf<String, String>()
               (0 until columnCount).forEach {
                 try {
-                  columnData.add(cur.getString(it) ?: "null")
+                  columnData[cur.getColumnName(it)] = cur.getString(it) ?: "null"
                 }catch (e: Exception){
-                  columnData.add(cur.getBlob(it)?.contentToString() ?: "null")
+                  columnData[cur.getColumnName(it)] =(cur.getBlob(it)?.contentToString() ?: "null")
                 }
               }
               data.add(columnData)
@@ -138,7 +138,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
         ConstUtils.TYPE_FLOAT -> editor.putFloat(keyValue.key, keyValue.value!!.toFloat())
         ConstUtils.TYPE_LONG -> editor.putLong(keyValue.key, keyValue.value!!.toLong())
         ConstUtils.TYPE_BOOLEAN -> editor.putBoolean(keyValue.key, keyValue.value!!.toBoolean())
-        ConstUtils.TYPE_STRING_SET -> editor.putStringSet(keyValue.key, gson.fromJson<Array<String>>(keyValue.value, Array<String>::class.java).let {
+        ConstUtils.TYPE_STRING_SET -> editor.putStringSet(keyValue.key, gson.fromJson<Array<String>>(keyValue.value, Array<String>::class.java).let { it ->
           val set = mutableSetOf<String>()
           it.mapTo(set) { it }
           set
@@ -172,11 +172,11 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
     database?.let {
       try {
         val contentValues = ContentValues()
-        content.forEach {
-          when (it.type) {
-            ConstUtils.TYPE_INTEGER -> contentValues.put(it.key, it.value?.toIntOrNull())
-            ConstUtils.TYPE_REAL -> contentValues.put(it.key, it.value?.toDoubleOrNull())
-            else -> contentValues.put(it.key, it.value)
+        content.forEach {keyValue ->
+          when (keyValue.type) {
+            ConstUtils.TYPE_INTEGER -> contentValues.put(keyValue.key, keyValue.value?.toIntOrNull())
+            ConstUtils.TYPE_REAL -> contentValues.put(keyValue.key, keyValue.value?.toDoubleOrNull())
+            else -> contentValues.put(keyValue.key, keyValue.value)
           }
         }
         return it.insertOrThrow(tName, null, contentValues) >= 0
@@ -204,9 +204,9 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
           sql += " where $where"
         }
         cursor = it.rawQuery(sql, null)
-        cursor?.let {
-          while (cursor.moveToNext()) {
-            return cursor.getInt(0)
+        cursor?.let { cur ->
+          while (cur.moveToNext()) {
+            return cur.getInt(0)
           }
           0
         } ?: 0
@@ -286,7 +286,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
    * 获取表的数据信息.
    */
   private fun getTableInfo(db: SQLiteDatabase, tName: String): List<TableFieldInfo> {
-    val infos = mutableListOf<TableFieldInfo>()
+    val data = mutableListOf<TableFieldInfo>()
     var cursor: Cursor? = null
     try {
       cursor = db.rawQuery("PRAGMA table_info('$tName')", null)
@@ -309,7 +309,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
                 ConstUtils.DEF_VALUE -> defValue = it.getString(i)
               }
             }
-            infos.add(TableFieldInfo(name, type, isPrimary, nullable, defValue))
+            data.add(TableFieldInfo(name, type, isPrimary, nullable, defValue))
           } while (it.moveToNext())
         }
         it.close()
@@ -319,7 +319,7 @@ class IDataProvider(private val ctx: Context, private val gson: Gson) : DataProv
     } finally {
       executeSafely { cursor?.close() }
     }
-    return infos
+    return data
   }
 
   /**
