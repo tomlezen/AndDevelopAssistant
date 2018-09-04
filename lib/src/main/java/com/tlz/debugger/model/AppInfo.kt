@@ -13,4 +13,10 @@ import android.support.annotation.Keep
  * @param dbs 应用数据库列表.
  */
 @Keep
-class AppInfo(val name: String, val pkg: String, val verName: String, val verCode: Int, val dbs: List<Db>)
+class AppInfo(
+		val name: String,
+		val pkg: String,
+		val verName: String,
+		val verCode: Int,
+		val dbs: List<Db>
+)
