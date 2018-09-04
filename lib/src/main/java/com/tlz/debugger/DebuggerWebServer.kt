@@ -2,9 +2,7 @@ package com.tlz.debugger
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
 import android.util.Pair
@@ -18,6 +16,7 @@ import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import kotlin.math.min
 
 /**
  * Created by tomlezen.
@@ -99,6 +98,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
 								dbs
 						).toResponse())
 					}
+					uri.contains("/api/app/info") -> return handleAppInfoRequest(it.parms)
 					uri.contains("/api/app") -> return handleAppRequest(it.parms)
 					uri.contains("/api/db") -> {
 						return if (it.parms.isEmpty() || !it.parms.containsKey("sql") || !it.parms.containsKey("dName") || !it.parms.containsKey("tName")) {
@@ -200,10 +200,21 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
 		return responseHtml("/index.html".readHtml(ctx))
 	}
 
+	private fun handleAppInfoRequest(params: Map<String, String>): NanoHTTPD.Response{
+		return try {
+			responseData(com.tlz.debugger.model.Response(data = appManager.getApplicationInfoByPkg(params["pkg"] ?: "")))
+		}catch (e: Exception){
+			e.printStackTrace()
+			 responseError(errorMsg = "参数错误")
+		}
+	}
+
 	private fun handleAppRequest(params: Map<String, String>): NanoHTTPD.Response {
 		try {
 			val pageIndex = params["pageIndex"]?.toInt() ?: 1
 			val pageSize = params["pageSize"]?.toInt() ?: 10
+			val search = params["search"] ?: ""
+			val filter = params["filter"] ?: "all"
 			var sortDir: String? = null
 			var sortField: String? = null
 			params.forEach {
@@ -214,9 +225,14 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
 				}
 			}
 
+			val filteredData = when(filter){
+				"system" -> appManager.applicationList.filter { it.isSystemApp }
+				"non-system" -> appManager.applicationList.filter { !it.isSystemApp }
+				else -> appManager.applicationList
+			}.filter { search.isEmpty() || it.name.contains(search) }
 			val data = if (sortDir != null && sortField != null) {
 				if (sortDir == "asc") {
-					appManager.applicationList.sortedBy {
+					filteredData.sortedBy {
 						when (sortField) {
 							"name" -> it.name
 							"size" -> it.size.toString()
@@ -225,7 +241,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
 						}
 					}
 				} else {
-					appManager.applicationList.sortedByDescending {
+					filteredData.sortedByDescending {
 						when (sortField) {
 							"name" -> it.name
 							"size" -> it.size.toString()
@@ -234,9 +250,11 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
 						}
 					}
 				}
-			} else appManager.applicationList
-			return responseData(com.tlz.debugger.model.Response(data = data.subList((pageIndex - 1) * pageSize, pageIndex * pageSize)))
+			} else filteredData
+			val resultData = data.subList((pageIndex - 1) * pageSize, min(pageIndex * pageSize, data.size))
+			return responseData(com.tlz.debugger.model.Response(data = resultData, total = data.size))
 		} catch (e: Exception) {
+			e.printStackTrace()
 			return responseError(errorMsg = "数据处理失败")
 		}
 	}

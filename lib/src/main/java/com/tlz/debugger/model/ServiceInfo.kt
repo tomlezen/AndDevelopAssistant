@@ -9,6 +9,7 @@ import android.support.annotation.Keep
  */
 @Keep
 class ServiceInfo(
+		val name: String,
 		val permission: String?,
 		val flags: Int,
 		val exported: Boolean

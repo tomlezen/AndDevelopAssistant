@@ -9,6 +9,7 @@ import android.support.annotation.Keep
  */
 @Keep
 class ActivityInfo(
+		val name: String,
 		val launchMode: String?,
 		val flags: Int,
 		val configChanges: Int,

@@ -46,7 +46,13 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 		get() = _applicationList
 
 	override fun readApplicationList() {
-		pkgManager.getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES)
+		pkgManager.getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES
+				or PackageManager.GET_ACTIVITIES
+				or PackageManager.GET_SERVICES
+				or PackageManager.GET_PERMISSIONS
+				or PackageManager.GET_PERMISSIONS
+				or PackageManager.GET_RECEIVERS
+		)
 //				.filter { (it.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0 }
 //				.filter { !it.packageName.startsWith("com.android") }
 				.mapTo(_applicationInfoList) {
@@ -62,9 +68,12 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 							appInfo.targetSdkVersion,
 							it.firstInstallTime,
 							it.lastUpdateTime,
-							it.requestedPermissions,
+							(it.requestedPermissions ?: arrayOf()).mapTo(mutableListOf()){p ->
+								Pair("permission", p)
+							},
 							it.activities?.mapTo(mutableListOf()) { actInfo ->
 								ActivityInfo(
+										actInfo.name,
 										when (actInfo.launchMode) {
 											LAUNCH_SINGLE_INSTANCE -> "singleInstance"
 											LAUNCH_SINGLE_TOP -> "singleTop"
@@ -80,6 +89,7 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 							} ?: listOf(),
 							it.services?.mapTo(mutableListOf()) { srvInfo ->
 								ServiceInfo(
+										srvInfo.name,
 										srvInfo.permission,
 										srvInfo.flags,
 										srvInfo.exported
@@ -87,6 +97,7 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 							} ?: listOf(),
 							it.receivers?.mapTo(mutableListOf()) { actInfo ->
 								ActivityInfo(
+										actInfo.name,
 										when (actInfo.launchMode) {
 											LAUNCH_SINGLE_INSTANCE -> "singleInstance"
 											LAUNCH_SINGLE_TOP -> "singleTop"
@@ -102,6 +113,7 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 							} ?: listOf(),
 							it.providers?.mapTo(mutableListOf()) { providerInfo ->
 								ProviderInfo(
+										providerInfo.name,
 										providerInfo.authority,
 										providerInfo.readPermission,
 										providerInfo.writePermission,

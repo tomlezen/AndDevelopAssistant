@@ -9,6 +9,7 @@ import android.support.annotation.Keep
  */
 @Keep
 class ProviderInfo(
+		val name: String,
 		val authority: String?,
 		val readPermission: String?,
 		val writePermission: String?,
