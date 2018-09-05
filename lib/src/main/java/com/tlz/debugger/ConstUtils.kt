@@ -33,5 +33,6 @@ object ConstUtils {
 	const val SEARCH = "search"
 	const val FILTER = "filter"
 	const val PKG = "pkg"
+	const val PATH = "path"
 
 }

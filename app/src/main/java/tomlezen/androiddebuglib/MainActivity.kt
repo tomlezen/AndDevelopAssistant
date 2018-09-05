@@ -1,11 +1,13 @@
 package tomlezen.androiddebuglib
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Pair
 import android.widget.TextView
+import com.tlz.andbase.persmission.RxPermissions
 import tomlezen.androiddebuglib.database.CustomDB
 import tomlezen.androiddebuglib.database.TestOneDb
 import tomlezen.androiddebuglib.database.TestThreeDb
@@ -58,6 +60,10 @@ class MainActivity : AppCompatActivity() {
         e.printStackTrace()
       }
     }
+
+    RxPermissions.with(this)
+        .request(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+        .subscribe()
   }
 
 }
