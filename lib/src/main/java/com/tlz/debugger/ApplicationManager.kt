@@ -3,7 +3,8 @@ package com.tlz.debugger
 import android.content.Context
 import android.content.pm.ActivityInfo.*
 import android.content.pm.PackageManager
-import com.tlz.debugger.model.*
+import com.tlz.debugger.models.*
+import java.io.File
 
 /**
  * Created by Tomlezen.
@@ -25,12 +26,11 @@ interface ApplicationManager {
 	 * @param pkg String
 	 * @return ApplicationInfo
 	 */
-	fun getApplicationInfoByPkg(pkg: String): ApplicationInfo
+	fun getApplicationInfoByPkg(pkg: String): ApplicationInfo?
 
 	companion object {
 		operator fun invoke(ctx: Context): ApplicationManager =
 				ApplicationManagerImpl(ctx)
-
 	}
 
 }
@@ -53,22 +53,28 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 				or PackageManager.GET_PERMISSIONS
 				or PackageManager.GET_RECEIVERS
 		)
-//				.filter { (it.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0 }
-//				.filter { !it.packageName.startsWith("com.android") }
 				.mapTo(_applicationInfoList) {
+					val path = readApkPath(it.packageName)
 					val appInfo = it.applicationInfo
 					ApplicationInfo(
-							"/image/appIcon?pkg=${it.packageName}",
+							"/api/app/icon?pkg=${it.packageName}",
 							appInfo.loadLabel(pkgManager).toString(),
 							it.packageName,
 							(it.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0,
 							it.versionName,
 							it.versionCode,
-							0L,
+							path,
+							File(path).run {
+								if (exists()) {
+									length()
+								} else {
+									0L
+								}
+							},
 							appInfo.targetSdkVersion,
 							it.firstInstallTime,
 							it.lastUpdateTime,
-							(it.requestedPermissions ?: arrayOf()).mapTo(mutableListOf()){p ->
+							(it.requestedPermissions ?: arrayOf()).mapTo(mutableListOf()) { p ->
 								Pair("permission", p)
 							},
 							it.activities?.mapTo(mutableListOf()) { actInfo ->
@@ -127,7 +133,20 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 		_applicationList = _applicationInfoList.mapTo(mutableListOf()) { Application(it.icon, it.name, it.pkg, it.verName, it.verCode, it.isSystemApp, it.size) }
 	}
 
-	override fun getApplicationInfoByPkg(pkg: String): ApplicationInfo =
-			_applicationInfoList.find { it.pkg == pkg }!!
+	/**
+	 * 读取apk路径.
+	 * @param pkg String
+	 * @return String
+	 */
+	private fun readApkPath(pkg: String): String {
+		val path = cmd("pm path $pkg").firstOrNull()
+		if (!path.isNullOrEmpty() && path?.startsWith("package:") == true) {
+			return path.split(":")[1]
+		}
+		return ""
+	}
+
+	override fun getApplicationInfoByPkg(pkg: String): ApplicationInfo? =
+			_applicationInfoList.find { it.pkg == pkg }
 
 }

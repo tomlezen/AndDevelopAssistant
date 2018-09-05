@@ -1,4 +1,4 @@
-package com.tlz.debugger.model
+package com.tlz.debugger.models
 
 import android.support.annotation.Keep
 

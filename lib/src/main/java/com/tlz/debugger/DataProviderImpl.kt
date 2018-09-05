@@ -3,10 +3,10 @@ package com.tlz.debugger
 import android.content.ContentValues
 import android.content.Context
 import com.google.gson.Gson
-import com.tlz.debugger.model.KeyValue
-import com.tlz.debugger.model.TableFieldInfo
-import com.tlz.debugger.model.TableInfo
-import com.tlz.debugger.model.TableWrapper
+import com.tlz.debugger.models.KeyValue
+import com.tlz.debugger.models.TableFieldInfo
+import com.tlz.debugger.models.TableInfo
+import com.tlz.debugger.models.TableWrapper
 import net.sqlcipher.Cursor
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
@@ -149,7 +149,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
       return true
     } else {
       openDatabase(dName)
-      return database?.let {
+      return database?.let { db ->
         try {
           val contentValues = ContentValues()
           content.forEach {
@@ -159,7 +159,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
               else -> contentValues.put(it.key, it.value)
             }
           }
-          it.update(tName, contentValues, where, null) == 1
+          db.update(tName, contentValues, where, null) == 1
         } finally {
           closeDatabase()
         }
@@ -318,6 +318,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
       e.printStackTrace()
     } finally {
       executeSafely { cursor?.close() }
+      closeDatabase()
     }
     return data
   }

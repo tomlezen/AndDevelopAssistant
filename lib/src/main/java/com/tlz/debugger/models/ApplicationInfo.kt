@@ -1,4 +1,4 @@
-package com.tlz.debugger.model
+package com.tlz.debugger.models
 
 import android.content.pm.ApplicationInfo
 import android.support.annotation.Keep
@@ -16,6 +16,7 @@ class ApplicationInfo(
 		isSystemApp: Boolean,
 		verName: String,
 		verCode: Int,
+		val path: String,
 		size: Long,
 		val targetSdk: Int,
 		val firstInstallTime: Long,

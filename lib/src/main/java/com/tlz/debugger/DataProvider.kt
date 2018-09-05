@@ -1,8 +1,8 @@
 package com.tlz.debugger
 
-import com.tlz.debugger.model.KeyValue
-import com.tlz.debugger.model.TableInfo
-import com.tlz.debugger.model.TableWrapper
+import com.tlz.debugger.models.KeyValue
+import com.tlz.debugger.models.TableInfo
+import com.tlz.debugger.models.TableWrapper
 import java.io.File
 import android.util.Pair
 

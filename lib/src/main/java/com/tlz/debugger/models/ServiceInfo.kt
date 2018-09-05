@@ -1,19 +1,16 @@
-package com.tlz.debugger.model
+package com.tlz.debugger.models
 
 import android.support.annotation.Keep
 
 /**
  * Created by Tomlezen.
  * Data: 2018/9/4.
- * Time: 14:09.
+ * Time: 14:14.
  */
 @Keep
-class ActivityInfo(
+class ServiceInfo(
 		val name: String,
-		val launchMode: String?,
-		val flags: Int,
-		val configChanges: Int,
-		val softInputMode: Int,
 		val permission: String?,
+		val flags: Int,
 		val exported: Boolean
 )
