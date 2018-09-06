@@ -48,10 +48,10 @@ class MainActivity : AppCompatActivity() {
     if (BuildConfig.DEBUG) {
       try {
         //初始化自定义数据库文件
-        val initializer = Class.forName("Initializer")
+        val initializer = Class.forName("com.tlz.debugger.Initializer")
         val method = initializer.getMethod("customDatabaseFiles", Map::class.java)
         val customDatabaseFiles = HashMap<String, Pair<File, String>>()
-        customDatabaseFiles.put("Custom.db", Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), ""))
+        customDatabaseFiles["Custom.db"] = Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), "")
         method.invoke(null, customDatabaseFiles)
         //获取服务端地址
         val serverAddressMethod = initializer.getMethod("getServerAddress")

@@ -42,6 +42,7 @@ class DebuggerWebServer private constructor(internal val ctx: Context, private v
 				handlers.add(DbRequestHandler(dataProvider))
 				handlers.add(AppRequestHandler(ctx, appManager))
 				handlers.add(FileRequestHandler())
+				handlers.add(WebSocketHandler())
 				handlers.add(DefaultRequestHandler(ctx))
 
 				start(10000)
