@@ -252,7 +252,7 @@ class DbRequestHandler(private val dataProvider: DataProvider) : RequestHandler 
 				if (file == null) {
 					responseError(errorMsg = "不存在该数据库")
 				} else {
-					NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "application/octet-stream", file.inputStream()).apply {
+					NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "*/*", file.inputStream()).apply {
 						addHeader("Content-Disposition", "attachment; filename=$dName")
 					}
 				}

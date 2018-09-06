@@ -1,10 +1,13 @@
 package com.tlz.debugger.models
 
+import android.support.annotation.Keep
+
 /**
  * Created by Tomlezen.
  * Date: 2018/9/5.
  * Time: 下午9:35.
  */
+@Keep
 class FileInfo(
 		val name: String,
 		val isDir: Boolean = false,

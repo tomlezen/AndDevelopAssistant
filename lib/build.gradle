@@ -8,7 +8,7 @@ android {
     compileSdkVersion 26
 
     defaultConfig {
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -24,6 +24,11 @@ android {
         }
     }
 
+    sourceSets {
+        main {
+            java.srcDirs += 'src/main/kotlin'
+        }
+    }
 }
 
 sourceCompatibility = "1.6"
@@ -34,7 +39,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.google.code.gson:gson:2.8.2'
-    implementation group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.1'
+//    implementation group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.1'
     implementation 'net.zetetic:android-database-sqlcipher:3.5.7@aar'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'

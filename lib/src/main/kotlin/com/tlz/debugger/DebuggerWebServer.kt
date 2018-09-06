@@ -1,5 +1,6 @@
 package com.tlz.debugger
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
@@ -8,12 +9,13 @@ import com.tlz.debugger.handlers.*
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
 
+
 /**
  * Created by tomlezen.
  * Data: 2018/1/27.
  * Time: 15:00.
  */
-class DebuggerWebServer private constructor(private val ctx: Context, private val port: Int) : NanoHTTPD(port) {
+class DebuggerWebServer private constructor(internal val ctx: Context, private val port: Int) : NanoHTTPD(port) {
 
 	private val tag = DebuggerWebServer::class.java.canonicalName
 
@@ -57,7 +59,7 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
 		session?.run {
 			handlers.forEach {
 				val resp = it.onRequest(session)
-				if(resp != null){
+				if (resp != null) {
 					return resp
 				}
 			}
@@ -70,6 +72,17 @@ class DebuggerWebServer private constructor(private val ctx: Context, private va
 
 		@SuppressLint("StaticFieldLeak")
 		private var instance: DebuggerWebServer? = null
+
+		/**
+		 * 文件读写权限是否通过.
+		 */
+		var filePermissionGranted = false
+			get() {
+				if (!field) {
+					field = instance?.ctx?.isPermissionsGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE) ?: false
+				}
+				return field
+			}
 
 		var serverAddress: String = ""
 

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -139,3 +140,12 @@ fun NanoHTTPD.IHTTPSession.verifyParams(doOnPass: (NanoHTTPD.IHTTPSession) -> Na
 		doOnPass(this)
 	}
 }
+
+/**
+ * 检查权限是否通过.
+ * @receiver Context
+ * @param permissions Array<out String>
+ * @return Boolean
+ */
+fun Context.isPermissionsGranted(vararg permissions: String): Boolean =
+		permissions.all { ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED }

@@ -12,7 +12,7 @@ import java.io.File
 class AndTempFileManagerFactory(private val ctx: Context) : NanoHTTPD.TempFileManagerFactory {
 
 	override fun create(): NanoHTTPD.TempFileManager =
-			AndTempFileManager(ctx.cacheDir.absolutePath + "/apk")
+			AndTempFileManager(ctx.externalCacheDir.absolutePath + "/debugger")
 
 	class AndTempFileManager(tmpdir: String) : NanoHTTPD.TempFileManager {
 

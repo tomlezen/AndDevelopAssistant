@@ -35,7 +35,7 @@ Gradle3.0以下： debugCompile 'com.tlz.tools:androiddebuglib:0.0.3'
 //初始化自定义数据库文件
       if (BuildConfig.DEBUG) {
         try {
-          val initializer = Class.forName("com.tlz.debugger.Initializer")
+          val initializer = Class.forName("Initializer")
           val method = initializer.getMethod("customDatabaseFiles", Map::class.java)
           val customDatabaseFiles = HashMap<String, Pair<File, String>>()
           customDatabaseFiles.put("Custom.db", Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), ""))
