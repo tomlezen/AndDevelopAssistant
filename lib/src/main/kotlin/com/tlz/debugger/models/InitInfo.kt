@@ -15,5 +15,6 @@ class InitInfo(
 		verCode: Int,
 		isSystemApp: Boolean,
 		size: Long,
+		val logServer: String,
 		val dbs: List<Db>
 ) : Application(icon, name, pkg, verName, verCode, isSystemApp, size)

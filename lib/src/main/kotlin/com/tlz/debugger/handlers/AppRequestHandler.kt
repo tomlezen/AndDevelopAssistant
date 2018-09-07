@@ -106,7 +106,7 @@ class AppRequestHandler(
 	 */
 	private fun handleAppInstallRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
 			handleRequestSafely {
-				val apkFilePath = ctx.cacheDir.absolutePath + "/install_apk.apk"
+				val apkFilePath = ctx.externalCacheDir.absolutePath + "/install_apk.apk"
 				val apkFile = File(apkFilePath)
 				if (apkFile.exists()) {
 					apkFile.delete()

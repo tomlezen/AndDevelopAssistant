@@ -810,16 +810,16 @@ public abstract class NanoWSD {
 
     private boolean isWebSocketConnectionHeader(Map<String, String> headers) {
         String connection = headers.get(NanoWSD.HEADER_CONNECTION);
-        return connection != null && connection.equals("keep-alive");//connection.toLowerCase().contains(NanoWSD.HEADER_CONNECTION_VALUE.toLowerCase());
+        String upgrade = NanoWSD.HEADER_CONNECTION_VALUE.toLowerCase();
+        return connection != null && connection.toLowerCase().contains(upgrade);
     }
 
     private boolean isWebSocketRequested(NanoHTTPD.IHTTPSession session) {
-//        Map<String, String> headers = session.getHeaders();
-//        String upgrade = headers.get(NanoWSD.HEADER_UPGRADE);
-//        boolean isCorrectConnection = isWebSocketConnectionHeader(headers);
-//        boolean isUpgrade = true ; //NanoWSD.HEADER_UPGRADE_VALUE.equalsIgnoreCase(upgrade);
-//        return isUpgrade && isCorrectConnection;
-        return session.getParms().containsKey("EIO") && session.getParms().containsKey("transport") && session.getParms().containsKey("t");
+        Map<String, String> headers = session.getHeaders();
+        String upgrade = headers.get(NanoWSD.HEADER_UPGRADE);
+        boolean isCorrectConnection = isWebSocketConnectionHeader(headers);
+        boolean isUpgrade = NanoWSD.HEADER_UPGRADE_VALUE.equalsIgnoreCase(upgrade);
+        return isUpgrade && isCorrectConnection;
     }
 
     // --------------------------------Listener--------------------------------
@@ -829,14 +829,14 @@ public abstract class NanoWSD {
     public NanoHTTPD.Response serve(final NanoHTTPD.IHTTPSession session) {
         Map<String, String> headers = session.getHeaders();
         if (isWebSocketRequested(session)) {
-//            if (!NanoWSD.HEADER_WEBSOCKET_VERSION_VALUE.equalsIgnoreCase(headers.get(NanoWSD.HEADER_WEBSOCKET_VERSION))) {
-//                return newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT,
-//                        "Invalid Websocket-Version " + headers.get(NanoWSD.HEADER_WEBSOCKET_VERSION));
-//            }
-//
-//            if (!headers.containsKey(NanoWSD.HEADER_WEBSOCKET_KEY)) {
-//                return newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "Missing Websocket-Key");
-//            }
+            if (!NanoWSD.HEADER_WEBSOCKET_VERSION_VALUE.equalsIgnoreCase(headers.get(NanoWSD.HEADER_WEBSOCKET_VERSION))) {
+                return newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT,
+                        "Invalid Websocket-Version " + headers.get(NanoWSD.HEADER_WEBSOCKET_VERSION));
+            }
+
+            if (!headers.containsKey(NanoWSD.HEADER_WEBSOCKET_KEY)) {
+                return newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "Missing Websocket-Key");
+            }
 
             WebSocket webSocket = openWebSocket(session);
             NanoHTTPD.Response handshakeResponse = webSocket.getHandshakeResponse();

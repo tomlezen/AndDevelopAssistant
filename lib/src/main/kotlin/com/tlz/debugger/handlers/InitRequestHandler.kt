@@ -46,6 +46,7 @@ class InitRequestHandler(
 					verCode,
 					isSystemApp,
 					size,
+					"${DebuggerWebServer.serverAddress}/api/log",
 					dbs
 			).toResponse())
 		} ?: responseError(errorMsg = "未获取到应用信息")

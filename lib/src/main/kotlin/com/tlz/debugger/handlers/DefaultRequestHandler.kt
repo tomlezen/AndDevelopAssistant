@@ -39,7 +39,8 @@ class DefaultRequestHandler(private val ctx: Context) : RequestHandler {
 							}
 						} catch (e: Exception) {
 							e.printStackTrace()
-							NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "")
+							responseHtml("/index.html".readHtml(ctx))
+//							NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "")
 						}
 					}
 				}

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Pair
 import android.widget.TextView
+import android.widget.Toast
 import com.tlz.andbase.persmission.RxPermissions
 import tomlezen.androiddebuglib.database.CustomDB
 import tomlezen.androiddebuglib.database.TestOneDb
@@ -63,7 +64,10 @@ class MainActivity : AppCompatActivity() {
 
     RxPermissions.with(this)
         .request(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
-        .subscribe()
+        .filter { !it }
+        .subscribe{
+          Toast.makeText(this, "您拒绝了文件读写权限，会导致文件相关功能不可用", Toast.LENGTH_LONG).show()
+        }
   }
 
 }

@@ -55,6 +55,7 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 		intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED)
 		intentFilter.addAction(Intent.ACTION_PACKAGE_REPLACED)
 		intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED)
+		intentFilter.addDataScheme("package")
 		ctx.registerReceiver(object : BroadcastReceiver() {
 			override fun onReceive(context: Context?, intent: Intent?) {
 				val pkgName = intent?.dataString?.substring(8)

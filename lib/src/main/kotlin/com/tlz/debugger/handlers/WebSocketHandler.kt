@@ -1,48 +1,36 @@
 package com.tlz.debugger.handlers
 
-import android.util.Log
+import com.tlz.debugger.LogcatReader
+import com.tlz.debugger.socket.DebuggerWSD
 import fi.iki.elonen.NanoHTTPD
-import fi.iki.elonen.NanoWSD
-import java.io.IOException
 
 /**
  * Created by Tomlezen.
  * Date: 2018/9/6.
  * Time: 下午9:47.
  */
-class WebSocketHandler : NanoWSD(), RequestHandler {
+class WebSocketHandler(private val wsd: DebuggerWSD) : RequestHandler {
 
-	override fun openWebSocket(handshake: NanoHTTPD.IHTTPSession): WebSocket =
-			DebuggerWebSocket(handshake)
+	private val logcatReader by lazy {
+		LogcatReader {
+			wsd.send(wrapLog(it))
+		}
+	}
+
+	/**
+	 * 包装下.
+	 * @return String
+	 */
+	private fun wrapLog(str: String): String {
+		if (str.contains("E/")) {
+			return "<p style='color: #FF3030'>$str</p>"
+		}
+		if (str.contains("W/")) {
+			return "<p style='color: #FA8072'>$str</p>"
+		}
+		return str
+	}
 
 	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
-			if (session.uri == "/api/log/") serve(session) else null
-
-	class DebuggerWebSocket(handshakeRequest: NanoHTTPD.IHTTPSession) :
-			NanoWSD.WebSocket(handshakeRequest) {
-
-		override fun onOpen() {
-			Log.d(TAG, "onOpen")
-		}
-
-		override fun onClose(code: NanoWSD.WebSocketFrame.CloseCode?, reason: String?, initiatedByRemote: Boolean) {
-			Log.d(TAG, "onClose")
-		}
-
-		override fun onMessage(message: NanoWSD.WebSocketFrame?) {
-			Log.d(TAG, "onMessage")
-		}
-
-		override fun onPong(pong: NanoWSD.WebSocketFrame?) {
-			Log.d(TAG, "onPong")
-		}
-
-		override fun onException(exception: IOException?) {
-			Log.d(TAG, "onException")
-		}
-	}
-
-	companion object {
-		private val TAG = WebSocketHandler::class.java.canonicalName
-	}
+			wsd.onRequest(session)?.also { logcatReader.start() }
 }

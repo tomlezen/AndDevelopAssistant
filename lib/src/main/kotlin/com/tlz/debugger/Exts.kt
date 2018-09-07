@@ -76,6 +76,24 @@ internal fun cmd(cmd: String): List<String> {
 }
 
 /**
+ * 执行cmd命令.
+ * @param cmd String
+ * @param onResult (List<String>) -> Unit
+ * @return Process
+ */
+internal fun cmd(cmd: String, onResult: (String) -> Unit): Process {
+	val p = Runtime.getRuntime().exec(cmd)
+	val read = BufferedReader(InputStreamReader(p.inputStream))
+	var line: String? = read.readLine()
+	while (line != null) {
+		onResult.invoke(line)
+		line = read.readLine()
+	}
+	read.close()
+	return p
+}
+
+/**
  * 安装应用.
  * @receiver Context
  * @param apkFile File

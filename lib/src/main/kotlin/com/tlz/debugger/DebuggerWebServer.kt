@@ -6,6 +6,7 @@ import android.content.Context
 import android.util.Log
 import android.util.Pair
 import com.tlz.debugger.handlers.*
+import com.tlz.debugger.socket.DebuggerWSD
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
 
@@ -21,6 +22,7 @@ class DebuggerWebServer private constructor(internal val ctx: Context, private v
 
 	private val dataProvider: DataProvider by lazy { DataProviderImpl(ctx, gson) }
 	private val appManager by lazy { ApplicationManager(ctx) }
+	private val wsd by lazy { DebuggerWSD() }
 
 	/** 所有请求处理器. */
 	private val handlers = mutableListOf<RequestHandler>()
@@ -38,14 +40,15 @@ class DebuggerWebServer private constructor(internal val ctx: Context, private v
 			Thread {
 				appManager.readApplicationList()
 				// 注册各种处理器
+				handlers.add(WebSocketHandler(wsd))
 				handlers.add(InitRequestHandler(ctx, dataProvider, appManager))
 				handlers.add(DbRequestHandler(dataProvider))
 				handlers.add(AppRequestHandler(ctx, appManager))
 				handlers.add(FileRequestHandler())
-				handlers.add(WebSocketHandler())
 				handlers.add(DefaultRequestHandler(ctx))
 
 				start(10000)
+				wsd.start(this)
 				isRunning = true
 				Log.e(tag, "address: $serverAddress")
 			}.start()
