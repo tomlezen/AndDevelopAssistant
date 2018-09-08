@@ -1,6 +1,5 @@
 package com.tlz.debugger.socket
 
-import android.util.Log
 import com.tlz.debugger.gson
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoWSD
@@ -90,11 +89,11 @@ class DebuggerWSD : NanoWSD() {
 	 * 发送消息.
 	 * @param message String
 	 */
-	fun send(message: String) {
+	fun send(log: com.tlz.debugger.models.Log) {
 		active.filter { it.isOpen }
 				.forEach {
 					try {
-						it.send(gson.toJson(message))
+						it.send(gson.toJson(log))
 					} catch (e: Exception) {
 					}
 				}
