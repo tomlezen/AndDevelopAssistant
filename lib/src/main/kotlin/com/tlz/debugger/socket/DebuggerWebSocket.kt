@@ -37,11 +37,11 @@ class DebuggerWebSocket(handsShakeRequest: NanoHTTPD.IHTTPSession) : NanoWSD.Web
 	}
 
 	override fun onMessage(message: NanoWSD.WebSocketFrame?) {
-		Log.d(TAG, "web socket message: $message")
+		Log.w(TAG, "web socket message: $message")
 	}
 
 	override fun onPong(pong: NanoWSD.WebSocketFrame?) {
-		Log.d(TAG, "web socket pong")
+		Log.w(TAG, "web socket pong")
 		pongCount++
 	}
 
