@@ -2,13 +2,10 @@ package com.tlz.debugger.handlers
 
 import android.content.Context
 import android.util.Log.*
-import com.tlz.debugger.LogcatReader
-import com.tlz.debugger.handleRequestSafely
+import com.tlz.debugger.*
 import com.tlz.debugger.models.FileInfo
 import com.tlz.debugger.models.Log
-import com.tlz.debugger.responseData
 import com.tlz.debugger.socket.DebuggerWSD
-import com.tlz.debugger.toResponse
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
 import java.text.SimpleDateFormat
@@ -78,6 +75,7 @@ class LogRequestHandler(private val ctx: Context, private val wsd: DebuggerWSD) 
 	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
 			when (session.uri) {
 				"/api/log/list" -> handleLogListRequest()
+				"/api/log/delete" -> session.verifyParams(::handleLogDeleteRequest, ConstUtils.FILES)
 				else -> wsd.onRequest(session)?.also { logcatReader.start() }
 			}
 
@@ -106,5 +104,24 @@ class LogRequestHandler(private val ctx: Context, private val wsd: DebuggerWSD) 
 							}
 				}
 				responseData(files.toResponse())
+			}
+
+	/**
+	 * 处理日志删除请求.
+	 * @param session: NanoHTTPD.IHTTPSession
+	 */
+	private fun handleLogDeleteRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+			handleRequestSafely {
+				if(DebuggerWebServer.filePermissionGranted){
+					val files = gson.fromJson<Array<String>>(session.parms["files"] ?:"{}", Array<String>::class.java)
+					File(logCacheFolder).listFiles()
+							.filter { it.name in files }
+							.forEach {
+								it.delete()
+							}
+					handleLogListRequest()
+				}else{
+					responseError(errorMsg = "没有文件读写权限，无法执行该操作")
+				}
 			}
 }
