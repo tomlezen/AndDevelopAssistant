@@ -31,7 +31,7 @@ class CustomDB(ctx: Context): SQLiteOpenHelper(CustomDatabasePathContext(ctx), "
     (1..50).forEach {
       val contentValues = ContentValues()
       contentValues.put("key", "key$it")
-      contentValues.put("value", "value$it")
+      contentValues.put("value", "$it")
       writableDatabase.insert(tableName, null, contentValues)
     }
   }

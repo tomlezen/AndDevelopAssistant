@@ -40,7 +40,7 @@ class DebuggerWebServer private constructor(internal val ctx: Context, private v
 			Thread {
 				appManager.readApplicationList()
 				// 注册各种处理器
-				handlers.add(WebSocketHandler(wsd))
+				handlers.add(LogRequestHandler(ctx, wsd))
 				handlers.add(InitRequestHandler(ctx, dataProvider, appManager))
 				handlers.add(DbRequestHandler(dataProvider))
 				handlers.add(AppRequestHandler(ctx, appManager))

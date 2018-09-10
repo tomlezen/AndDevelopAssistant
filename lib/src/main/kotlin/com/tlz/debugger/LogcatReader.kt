@@ -26,7 +26,6 @@ class LogcatReader(private val onLogcat: (String) -> Unit) {
 			Thread {
 				executeSafely {
 					p = cmd("logcat -v time") { onLogcat(it) }
-//					p = cmd("logcat -v time *:w") { onLogcat(it) }
 				}
 			}.start()
 		}

@@ -38,7 +38,7 @@ interface DataProvider {
   /**
    * 执行sql命令.
    */
-  fun executeSql(dName: String, sql: String): Boolean
+  fun executeSql(dName: String, sql: String): Any
 
   /**
    * 添加行数据.

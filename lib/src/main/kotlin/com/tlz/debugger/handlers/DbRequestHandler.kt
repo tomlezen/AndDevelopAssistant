@@ -230,8 +230,9 @@ class DbRequestHandler(private val dataProvider: DataProvider) : RequestHandler 
 				val dName = session.parms.getValue("dName")
 				val sql = session.parms.getValue("sql")
 				if (sql.isNotBlank()) {
-					if (dataProvider.executeSql(dName, sql)) {
-						responseData(com.tlz.debugger.models.Response(data = "success"))
+					val result = dataProvider.executeSql(dName, sql)
+					if (result !is Boolean || result) {
+						responseData(com.tlz.debugger.models.Response(data = if (result is Boolean) "success" else result))
 					} else {
 						responseError(errorMsg = "sql语句执行失败，请检查后再重试")
 					}

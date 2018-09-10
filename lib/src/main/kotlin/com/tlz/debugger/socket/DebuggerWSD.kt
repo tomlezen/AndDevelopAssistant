@@ -87,7 +87,7 @@ class DebuggerWSD : NanoWSD() {
 
 	/**
 	 * 发送消息.
-	 * @param message String
+	 * @param log Log
 	 */
 	fun send(log: com.tlz.debugger.models.Log) {
 		active.filter { it.isOpen }

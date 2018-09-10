@@ -28,20 +28,20 @@ class DebuggerWebSocket(handsShakeRequest: NanoHTTPD.IHTTPSession) : NanoWSD.Web
 	}
 
 	override fun onOpen() {
-		Log.d(TAG, "web socket open")
+//		Log.d(TAG, "web socket open")
 		send(gson.toJson(connectSuccessLog))
 	}
 
 	override fun onClose(code: NanoWSD.WebSocketFrame.CloseCode?, reason: String?, initiatedByRemote: Boolean) {
-		Log.d(TAG, "web socket close, reason: $reason")
+//		Log.d(TAG, "web socket close, reason: $reason")
 	}
 
 	override fun onMessage(message: NanoWSD.WebSocketFrame?) {
-		Log.w(TAG, "web socket message: $message")
+//		Log.d(TAG, "web socket message: $message")
 	}
 
 	override fun onPong(pong: NanoWSD.WebSocketFrame?) {
-		Log.w(TAG, "web socket pong")
+//		Log.d(TAG, "web socket pong")
 		pongCount++
 	}
 
