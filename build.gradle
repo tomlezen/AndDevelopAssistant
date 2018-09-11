@@ -20,8 +20,8 @@ allprojects {
     ext{
         repoName = "tools"
         groupId = "com.tlz.tools"
-        artifactId = "androiddebuglib"
-        uploadName = "androiddebuglib"
+        artifactId = "ada"
+        uploadName = "AndDevelopAssistant"
         packaging = "aar"
         desc = ""
         website = "https://bitbucket.org/tomlezen/androiddebuglib"

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.tlz.debugger">
+    package="com.tlz.ada">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -9,14 +9,14 @@
 
     <application>
         <provider
-            android:name=".DebuggerInitProvider"
-            android:authorities="${applicationId}.DebuggerInitProvider"
+            android:name=".AndDevelopAssistantInitProvider"
+            android:authorities="${applicationId}.AndDevelopAssistantProvider"
             android:enabled="true"
             android:exported="false" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="${applicationId}.DebuggerFileProvider"
+            android:authorities="${applicationId}.AndDevelopAssistantFileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <!-- 元数据 -->
