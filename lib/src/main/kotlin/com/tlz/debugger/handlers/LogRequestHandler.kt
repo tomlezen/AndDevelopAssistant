@@ -76,6 +76,7 @@ class LogRequestHandler(private val ctx: Context, private val wsd: DebuggerWSD) 
 			when (session.uri) {
 				"/api/log/list" -> handleLogListRequest()
 				"/api/log/delete" -> session.verifyParams(::handleLogDeleteRequest, ConstUtils.FILES)
+				"/api/log/download" -> session.verifyParams(::handleLogDownloadRequest, ConstUtils.FILE_NAME)
 				else -> wsd.onRequest(session)?.also { logcatReader.start() }
 			}
 
@@ -89,6 +90,7 @@ class LogRequestHandler(private val ctx: Context, private val wsd: DebuggerWSD) 
 				val logCache = File(logCacheFolder)
 				if (logCache.exists()) {
 					logCache.listFiles()
+							.sortedByDescending { it.lastModified() }
 							.filter { !it.isDirectory }
 							.mapTo(files) {
 								FileInfo(
@@ -122,6 +124,26 @@ class LogRequestHandler(private val ctx: Context, private val wsd: DebuggerWSD) 
 					handleLogListRequest()
 				}else{
 					responseError(errorMsg = "没有文件读写权限，无法执行该操作")
+				}
+			}
+
+	/**
+	 * 处理日志文件下载请求.
+	 * @param session NanoHTTPD.IHTTPSession
+	 * @return NanoHTTPD.Response
+	 */
+	private fun handleLogDownloadRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+			handleRequestSafely {
+				val fileName = session.parms["file_name"]
+				val file = File(logCacheFolder, fileName)
+				if (!file.exists()) {
+					responseError(errorMsg = "文件不存在")
+				} else if (!file.canRead()) {
+					responseError(errorMsg = "文件不可读取")
+				} else {
+					NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "*/*", file.inputStream()).apply {
+						addHeader("Content-Disposition", "attachment; filename=${file.name}")
+					}
 				}
 			}
 }

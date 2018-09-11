@@ -47,7 +47,7 @@ class FileRequestHandler : RequestHandler {
 	 */
 	private fun handleFileListRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
 			handleRequestSafely {
-				responseData(listFiles(session.filePath()).toResponse())
+				responseData(session.filePath().listFiles().toResponse())
 			}
 
 	/**
@@ -66,7 +66,7 @@ class FileRequestHandler : RequestHandler {
 						val realPath = if (path == "root") Environment.getExternalStorageDirectory().absolutePath else path
 						val newFile = File(realPath, fileName)
 						if (newFile.createNewFile()) {
-							responseData(listFiles(realPath).toResponse())
+							responseData(realPath.listFiles().toResponse())
 						} else {
 
 							responseError(errorMsg = "文件创建失败")
@@ -92,7 +92,7 @@ class FileRequestHandler : RequestHandler {
 						val path = session.filePath()
 						val newFile = File(path, folderName)
 						if (newFile.mkdir()) {
-							responseData(listFiles(path).toResponse())
+							responseData(path.listFiles().toResponse())
 						} else {
 							responseError(errorMsg = "文件夹创建失败")
 						}
@@ -120,7 +120,7 @@ class FileRequestHandler : RequestHandler {
 						cacheFile.renameTo(File(filePath))
 						filePaths.add(filePath)
 					}
-					responseData(listFiles(path).toResponse())
+					responseData(path.listFiles().toResponse())
 				} else {
 					responseError(errorMsg = "空文件")
 				}
@@ -132,7 +132,7 @@ class FileRequestHandler : RequestHandler {
 	 * @return NanoHTTPD.Response
 	 */
 	private fun handleDownloadRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
-			handleRequestSafely {
+			handleRequestSafely {	
 				val path = session.parms[PATH]
 				val file = File(path)
 				if (!file.exists()) {
@@ -158,7 +158,7 @@ class FileRequestHandler : RequestHandler {
 				if (file.exists()) {
 					val parent = file.parentFile.absolutePath
 					if (file.deleteRecursively()) {
-						responseData(listFiles(parent).toResponse())
+						responseData(parent.listFiles().toResponse())
 					} else {
 						responseError(errorMsg = "删除失败")
 					}
@@ -166,30 +166,6 @@ class FileRequestHandler : RequestHandler {
 					responseError(errorMsg = "文件不存在")
 				}
 			}
-
-	/**
-	 * 获取目录下的所有文件.
-	 * @param path String
-	 */
-	private fun listFiles(path: String): List<FileInfo> {
-		val dirContent = mutableListOf<FileInfo>()
-		val dirFile = File(path)
-		if (dirFile.exists() && dirFile.canRead()) {
-			dirFile.listFiles()?.mapTo(dirContent) {
-				FileInfo(
-						it.name,
-						it.isDirectory,
-						it.absolutePath,
-						it.length(),
-						it.canRead(),
-						it.canWrite(),
-						it.isHidden,
-						it.lastModified()
-				)
-			}
-		}
-		return dirContent
-	}
 
 	private fun NanoHTTPD.IHTTPSession.filePath() =
 			with(parms[PATH] ?: "") {

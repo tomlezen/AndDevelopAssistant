@@ -9,6 +9,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.tlz.debugger.models.FileInfo
 import com.tlz.debugger.models.Response
 import fi.iki.elonen.NanoHTTPD
 import java.io.BufferedReader
@@ -109,6 +110,31 @@ internal fun Context.installApk(apkFile: File) {
 		install.setDataAndType(Uri.parse("file://" + apkFile.absolutePath), "application/vnd.android.package-archive");
 	}
 	startActivity(install)
+}
+
+/**
+ * 获取目录下的所有文件.
+ * @receiver String
+ * @return List<FileInfo>
+ */
+fun String.listFiles(): List<FileInfo> {
+	val dirContent = mutableListOf<FileInfo>()
+	val dirFile = File(this)
+	if (dirFile.exists() && dirFile.canRead()) {
+		dirFile.listFiles()?.mapTo(dirContent) {
+			FileInfo(
+					it.name,
+					it.isDirectory,
+					it.absolutePath,
+					it.length(),
+					it.canRead(),
+					it.canWrite(),
+					it.isHidden,
+					it.lastModified()
+			)
+		}
+	}
+	return dirContent
 }
 
 fun response(type: String, html: String, cacheTime: String): NanoHTTPD.Response =

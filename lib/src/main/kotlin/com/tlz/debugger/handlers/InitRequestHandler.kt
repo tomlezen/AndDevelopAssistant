@@ -34,7 +34,7 @@ class InitRequestHandler(
 		dataProvider.getDatabaseList().forEach {
 			executeSafely {
 				val tabWrapper = dataProvider.getAllTable(it)
-				dbs.add(Db(it, tabWrapper.verison, tabWrapper.tables))
+				dbs.add(Db(it, tabWrapper.version, tabWrapper.tables))
 			}
 		}
 		return appManager.getApplicationInfoByPkg(ctx.packageName)?.run {

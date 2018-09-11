@@ -9,6 +9,7 @@ import android.util.Pair
 import android.widget.TextView
 import android.widget.Toast
 import com.tlz.andbase.persmission.RxPermissions
+import kotlinx.android.synthetic.main.activity_main.*
 import tomlezen.androiddebuglib.database.CustomDB
 import tomlezen.androiddebuglib.database.TestOneDb
 import tomlezen.androiddebuglib.database.TestThreeDb
@@ -68,6 +69,11 @@ class MainActivity : AppCompatActivity() {
         .subscribe{
           Toast.makeText(this, "您拒绝了文件读写权限，会导致文件相关功能不可用", Toast.LENGTH_LONG).show()
         }
+
+//
+//    btn_throw_exception.setOnClickListener {
+//      throw NullPointerException()
+//    }
   }
 
 }

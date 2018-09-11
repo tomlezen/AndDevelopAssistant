@@ -1,12 +1,14 @@
-# Android数据库操作依赖库
+# Android开发辅助依赖库
+主要功能：数据库（支持自定义数据库）、SharePreferences数据查询修改添加；应用实时日志以及历史日志查看；手机所有应用信息查看、apk下载
+以及安装应用到手机上；手机文件管理：创建文件、文件夹，删除文件、批量上传文件到手机
 
-参考[Android-Debug-Database](https://github.com/amitshekhariitbhu/Android-Debug-Database)
+数据库相关处理思路参考[Android-Debug-Database](https://github.com/amitshekhariitbhu/Android-Debug-Database)
 
 ## 引入依赖
 
 ```
-Gradle3.0以上： debugImplementation 'com.tlz.tools:androiddebuglib:0.0.3'
-Gradle3.0以下： debugCompile 'com.tlz.tools:androiddebuglib:0.0.3'
+Gradle3.0以上： debugImplementation 'com.tlz.tools:androiddebuglib:0.0.4'
+Gradle3.0以下： debugCompile 'com.tlz.tools:androiddebuglib:0.0.4'
 ```
 
 启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为DebuggerWebServer的日志，其中会输入完整的访问地址。
@@ -40,6 +42,9 @@ Gradle3.0以下： debugCompile 'com.tlz.tools:androiddebuglib:0.0.3'
           val customDatabaseFiles = HashMap<String, Pair<File, String>>()
           customDatabaseFiles.put("Custom.db", Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), ""))
           method.invoke(null, customDatabaseFiles)
+          // 获取服务器地址
+          val serverAddressMethod = initializer.getMethod("getServerAddress")
+          serverAddress = serverAddressMethod.invoke(null)
         } catch (e: Exception) {
           e.printStackTrace()
         }

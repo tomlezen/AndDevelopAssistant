@@ -268,6 +268,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
 			database?.let {
 				var cursor: Cursor? = null
 				try {
+					executeSafely { version = it.version }
 					cursor = it.rawQuery("SELECT name FROM sqlite_master WHERE type='table' OR type='view' ORDER BY name COLLATE NOCASE", null)
 					if (cursor.moveToFirst()) {
 						while (!cursor.isAfterLast) {
@@ -278,7 +279,6 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
 							cursor.moveToNext()
 						}
 					}
-					executeSafely { version = it.version }
 				} finally {
 					executeSafely { cursor?.close() }
 					closeDatabase()

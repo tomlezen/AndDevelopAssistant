@@ -14,8 +14,8 @@ open class Application(
 		val icon: String,
 		val name: String,
 		val pkg: String,
-		val verName: String,
-		val verCode: Int,
+		val verName: String?,
+		val verCode: Int?,
 		val isSystemApp: Boolean,
 		val size: Long
 )

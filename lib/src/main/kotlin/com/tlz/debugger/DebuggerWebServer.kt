@@ -34,8 +34,8 @@ class DebuggerWebServer private constructor(internal val ctx: Context, private v
 	 * 启动服务器.
 	 */
 	fun startServer() {
-		tempFileManagerFactory = AndTempFileManagerFactory(ctx)
 		if (!isRunning) {
+			tempFileManagerFactory = AndTempFileManagerFactory(ctx)
 			serverAddress = "${Initializer.getPhoneIp()}:$port"
 			Thread {
 				appManager.readApplicationList()
