@@ -18,7 +18,7 @@ Gradle3.0以上： debugImplementation 'com.tlz.tools:ada:0.0.1'
 Gradle3.0以下： debugCompile 'com.tlz.tools:ada:0.0.1'
 ```
 
-启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为DebuggerWebServer的日志，其中会输入完整的访问地址。
+启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AndDevelopAssistantWebServer的日志，其中会输入完整的访问地址。
 
 ## 如何设置web访问端口
 
@@ -61,6 +61,9 @@ Gradle3.0以下： debugCompile 'com.tlz.tools:ada:0.0.1'
  //注：
  //HashMap<String, Pair<File, String>>：第一个String类型是数据库的名字；File是数据据文件，第二个String是数据据密码，特别注意Pair是android.util.Pair类型不是kotlin的Pair类型
 ```
+
+## 问题
+1. 如果遇到AndroidManifest的FileProider问题，请在你申明的provider加上`tools:replace="android:authorities"`
 
 ## 界面截图
 
