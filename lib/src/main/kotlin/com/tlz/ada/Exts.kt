@@ -103,7 +103,7 @@ internal fun Context.installApk(apkFile: File) {
 	val install = Intent(Intent.ACTION_VIEW)
 	install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-		val apkUri = FileProvider.getUriForFile(this, "${packageName}.provider", apkFile)
+		val apkUri = FileProvider.getUriForFile(this, "$packageName.AndDevelopAssistantFileProvider", apkFile)
 		install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 		install.setDataAndType(apkUri, "application/vnd.android.package-archive");
 	} else {

@@ -16,7 +16,7 @@ class ApplicationInfo(
 		isSystemApp: Boolean,
 		verName: String,
 		verCode: Int,
-		val path: String,
+		var path: String,
 		size: Long,
 		val targetSdk: Int,
 		val firstInstallTime: Long,

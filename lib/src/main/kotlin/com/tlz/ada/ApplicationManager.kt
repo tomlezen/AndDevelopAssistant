@@ -7,8 +7,11 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo.*
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.os.Environment
 import com.tlz.ada.models.*
-import java.io.File
+import java.io.*
+import java.util.*
+
 
 /**
  * Created by Tomlezen.
@@ -45,6 +48,8 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 
 	private var _applicationList = mutableListOf<Application>()
 	private val _applicationInfoList = mutableListOf<ApplicationInfo>()
+
+//	private val isHuaWeiRom by lazy { isHuaWeiRoom() }
 
 	override val applicationList: List<Application>
 		get() = _applicationList
@@ -112,7 +117,6 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 
 	private fun PackageInfo.toApplicationInfo(): ApplicationInfo {
 		val it = this
-		val path = readApkPath(it.packageName)
 		val appInfo = it.applicationInfo
 		return ApplicationInfo(
 				"/api/app/icon?pkg=${it.packageName}",
@@ -121,14 +125,8 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 				(it.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0,
 				it.versionName,
 				it.versionCode,
-				path,
-				File(path).run {
-					if (exists()) {
-						length()
-					} else {
-						0L
-					}
-				},
+				"",
+				0L,
 				appInfo.targetSdkVersion,
 				it.firstInstallTime,
 				it.lastUpdateTime,
@@ -190,6 +188,36 @@ private class ApplicationManagerImpl(private val ctx: Context) : ApplicationMana
 	}
 
 	override fun getApplicationInfoByPkg(pkg: String): ApplicationInfo? =
-			_applicationInfoList.find { it.pkg == pkg }
+			_applicationInfoList.find { it.pkg == pkg }?.apply {
+				if (path.isEmpty()){
+					path = readApkPath(pkg)
+					size = File(path).run {
+						if (exists()) {
+							length()
+						} else {
+							0L
+						}
+					}
+				}
+			}
+
+	/**
+	 * 是否是华为手机.
+	 * @return Boolean
+	 */
+//	private fun isHuaWeiRoom(): Boolean {
+//		try {
+//			FileInputStream(File(Environment.getRootDirectory(), "build.prop")).use {
+//				val buildProperties = Properties()
+//				buildProperties.load(it)
+//				return buildProperties.containsKey("ro.build.hw_emui_api_level")
+//			}
+//		}catch (e: Exception){
+//
+//		}finally {
+//
+//		}
+//		return false
+//	}
 
 }

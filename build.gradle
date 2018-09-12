@@ -26,7 +26,7 @@ allprojects {
         desc = ""
         website = "https://github.com/tomlezen/AndDevelopAssistant"
         gitUrl = "https://github.com/tomlezen/AndDevelopAssistant.git"
-        publishVersion = "0.0.4"
+        publishVersion = "0.0.1"
         autoPublish = true
     }
     repositories {

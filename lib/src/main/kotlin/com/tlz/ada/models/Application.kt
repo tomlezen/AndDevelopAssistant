@@ -17,5 +17,5 @@ open class Application(
 		val verName: String?,
 		val verCode: Int?,
 		val isSystemApp: Boolean,
-		val size: Long
+		var size: Long
 )
