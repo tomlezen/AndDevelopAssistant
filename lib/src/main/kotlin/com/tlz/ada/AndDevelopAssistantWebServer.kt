@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.util.Pair
-import android.widget.Toast
 import com.tlz.ada.handlers.*
 import com.tlz.ada.socket.AndDevelopAssistantWSD
 import fi.iki.elonen.NanoHTTPD
@@ -29,10 +28,19 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 	/** web服务器是否运行. */
 	private var isRunning = false
 
+	/** 文件读写权限是否通过. */
+	var filePermissionGranted = false
+		get() {
+			if (!field) {
+				field = ctx.isPermissionsGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+			}
+			return field
+		}
+
+	/**
+	 * 启动服务器.
+	 */
 	@SuppressLint("LongLogTag")
-			/**
-			 * 启动服务器.
-			 */
 	fun startServer() {
 		if (!isRunning) {
 			tempFileManagerFactory = AndTempFileManagerFactory(ctx)
@@ -46,7 +54,7 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 					handlers.add(InitRequestHandler(ctx, dataProvider, appManager))
 					handlers.add(DbRequestHandler(dataProvider))
 					handlers.add(AppRequestHandler(ctx, appManager))
-					handlers.add(FileRequestHandler())
+					handlers.add(FileRequestHandler(this))
 					handlers.add(DefaultRequestHandler(ctx))
 
 					start(10000)
@@ -61,6 +69,10 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 		}
 	}
 
+	/**
+	 * 设置自定义数据库.
+	 * @param files Map<String, Pair<File, String>>
+	 */
 	fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
 		dataProvider.setCustomDatabaseFiles(files)
 	}
@@ -84,17 +96,7 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 		@SuppressLint("StaticFieldLeak")
 		private var instance: AndDevelopAssistantWebServer? = null
 
-		/**
-		 * 文件读写权限是否通过.
-		 */
-		var filePermissionGranted = false
-			get() {
-				if (!field) {
-					field = instance?.ctx?.isPermissionsGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE) ?: false
-				}
-				return field
-			}
-
+		/** 服务器地址. */
 		var serverAddress: String = ""
 
 		fun start(ctx: Context) {

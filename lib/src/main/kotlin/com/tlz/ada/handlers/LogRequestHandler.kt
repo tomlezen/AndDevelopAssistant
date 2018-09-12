@@ -18,7 +18,10 @@ import java.util.*
  * Date: 2018/9/6.
  * Time: 下午9:47.
  */
-class LogRequestHandler(private val ctx: Context, private val wsd: AndDevelopAssistantWSD) : RequestHandler {
+class LogRequestHandler(
+		private val ctx: Context,
+		private val wsd: AndDevelopAssistantWSD
+) : RequestHandler {
 
 	/** 日志文件，根据具体时间来生成. */
 	private val logFileName by lazy {
@@ -114,17 +117,14 @@ class LogRequestHandler(private val ctx: Context, private val wsd: AndDevelopAss
 	 */
 	private fun handleLogDeleteRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
 			handleRequestSafely {
-				if(AndDevelopAssistantWebServer.filePermissionGranted){
-					val files = gson.fromJson<Array<String>>(session.parms["files"] ?:"{}", Array<String>::class.java)
-					File(logCacheFolder).listFiles()
-							.filter { it.name in files }
-							.forEach {
-								it.delete()
-							}
-					handleLogListRequest()
-				}else{
-					responseError(errorMsg = "没有文件读写权限，无法执行该操作")
-				}
+				val files = gson.fromJson<Array<String>>(session.parms["files"]
+						?: "{}", Array<String>::class.java)
+				File(logCacheFolder).listFiles()
+						.filter { it.name in files }
+						.forEach {
+							it.delete()
+						}
+				handleLogListRequest()
 			}
 
 	/**

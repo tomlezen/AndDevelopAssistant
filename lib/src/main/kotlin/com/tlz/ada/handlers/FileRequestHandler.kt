@@ -15,7 +15,7 @@ import java.io.File
  * Data: 2018/9/5.
  * Time: 17:54.
  */
-class FileRequestHandler : RequestHandler {
+class FileRequestHandler(private val webServer: AndDevelopAssistantWebServer) : RequestHandler {
 
 	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
 			when (session.uri) {
@@ -34,7 +34,7 @@ class FileRequestHandler : RequestHandler {
 	 * @return NanoHTTPD.Response
 	 */
 	private fun checkPermission(doOnPermissionGranted: () -> NanoHTTPD.Response): NanoHTTPD.Response =
-			if (AndDevelopAssistantWebServer.filePermissionGranted) {
+			if (webServer.filePermissionGranted) {
 				doOnPermissionGranted.invoke()
 			} else {
 				responseError(errorMsg = "没有文件读写权限")
@@ -131,7 +131,7 @@ class FileRequestHandler : RequestHandler {
 	 * @return NanoHTTPD.Response
 	 */
 	private fun handleDownloadRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
-			handleRequestSafely {	
+			handleRequestSafely {
 				val path = session.parms[PATH]
 				val file = File(path)
 				if (!file.exists()) {
