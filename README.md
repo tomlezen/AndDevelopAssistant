@@ -61,3 +61,11 @@ Gradle3.0以下： debugCompile 'com.tlz.tools:androiddebuglib:0.0.4'
  //注：
  //HashMap<String, Pair<File, String>>：第一个String类型是数据库的名字；File是数据据文件，第二个String是数据据密码，特别注意Pair是android.util.Pair类型不是kotlin的Pair类型
 ```
+
+## 界面截图
+
+<img src="https://github.com/tomlezen/AndDevelopAssistant/blob/master/screenshots/Log.png"></img>
+<img src="https://github.com/tomlezen/AndDevelopAssistant/blob/master/screenshots/File.png"></img>
+<img src="https://github.com/tomlezen/AndDevelopAssistant/blob/master/screenshots/application.png"></img>
+<img src="https://github.com/tomlezen/AndDevelopAssistant/blob/master/screenshots/SharePrefrences.png"></img>
+<img src="https://github.com/tomlezen/AndDevelopAssistant/blob/master/screenshots/Database.png"></img>
