@@ -19,8 +19,6 @@ import java.io.File
  */
 class AndDevelopAssistantWebServer private constructor(internal val ctx: Context, private val port: Int) : NanoHTTPD(port) {
 
-	private val tag = AndDevelopAssistantWebServer::class.java.canonicalName
-
 	private val dataProvider: DataProvider by lazy { DataProviderImpl(ctx, gson) }
 	private val appManager by lazy { ApplicationManager(ctx) }
 	private val wsd by lazy { AndDevelopAssistantWSD() }
@@ -31,15 +29,17 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 	/** web服务器是否运行. */
 	private var isRunning = false
 
-	/**
-	 * 启动服务器.
-	 */
+	@SuppressLint("LongLogTag")
+			/**
+			 * 启动服务器.
+			 */
 	fun startServer() {
 		if (!isRunning) {
 			tempFileManagerFactory = AndTempFileManagerFactory(ctx)
 			serverAddress = "${Initializer.getPhoneIp()}:$port"
 			Thread {
 				val isSuccessful = executeSafely {
+					// 为了加快应用列表api的访问速度，先加载所有的应用再启动服务器
 					appManager.readApplicationList()
 					// 注册各种处理器
 					handlers.add(LogRequestHandler(ctx, wsd))
@@ -52,10 +52,10 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 					start(10000)
 					wsd.start(this)
 					isRunning = true
-					Log.e(tag, "address: $serverAddress")
+					Log.e(TAG, "address: $serverAddress")
 				}
 				if (!isSuccessful) {
-					Toast.makeText(ctx, "Android调试辅助初始化失败", Toast.LENGTH_LONG).show()
+					Log.e(TAG, "Android调试辅助初始化失败")
 				}
 			}.start()
 		}
@@ -78,6 +78,7 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 	}
 
 	companion object {
+		private const val TAG = "AndDevelopAssistantWebServer"
 		private const val DEF_PORT = 10000
 
 		@SuppressLint("StaticFieldLeak")
@@ -112,7 +113,6 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 			return try {
 				ctx.metaDataInt("DEBUG_PORT", DEF_PORT)
 			} catch (e: Exception) {
-				e.printStackTrace()
 				DEF_PORT
 			}
 		}

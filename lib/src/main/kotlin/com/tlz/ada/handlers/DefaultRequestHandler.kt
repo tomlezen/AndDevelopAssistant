@@ -40,7 +40,6 @@ class DefaultRequestHandler(private val ctx: Context) : RequestHandler {
 								else -> responseHtml("/index.html".readHtml(ctx))
 							}
 						} catch (e: Exception) {
-							e.printStackTrace()
 							responseHtml("/index.html".readHtml(ctx))
 //							NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "")
 						}

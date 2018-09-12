@@ -22,16 +22,15 @@ class AndTempFileManagerFactory(private val ctx: Context) : NanoHTTPD.TempFileMa
 		init {
 			if (!tempDirFile.exists()) {
 				tempDirFile.mkdirs()
+			} else {
+				// 清空之前未删除掉的文件
+				executeSafely { tempDirFile.listFiles().forEach { it.delete() } }
 			}
 		}
 
 		override fun clear() {
 			this.tempFiles.forEach {
-				try {
-					it.delete()
-				} catch (ignored: Exception) {
-					ignored.printStackTrace()
-				}
+				executeSafely { it.delete() }
 			}
 			this.tempFiles.clear()
 		}

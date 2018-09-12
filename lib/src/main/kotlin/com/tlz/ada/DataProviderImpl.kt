@@ -228,15 +228,13 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
 	 */
 	private fun initDatabaseFiles(): MutableMap<String, Pair<File, String>> {
 		val databaseFiles = HashMap<String, Pair<File, String>>()
-		try {
+		executeSafely {
 			for (databaseName in ctx.databaseList()) {
 				if (!databaseName.contains("-journal")) {
 					val password = getDatabasePassword(databaseName)
 					databaseFiles[databaseName] = Pair(ctx.getDatabasePath(databaseName), password)
 				}
 			}
-		} catch (e: Exception) {
-			e.printStackTrace()
 		}
 
 		//最后加载SharePreferences
@@ -321,7 +319,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
 				it.close()
 			}
 		} catch (e: Exception) {
-			e.printStackTrace()
+//			e.printStackTrace()
 		} finally {
 			executeSafely { cursor?.close() }
 			closeDatabase()

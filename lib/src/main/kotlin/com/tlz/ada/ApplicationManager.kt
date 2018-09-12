@@ -7,10 +7,8 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo.*
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.os.Environment
 import com.tlz.ada.models.*
-import java.io.*
-import java.util.*
+import java.io.File
 
 
 /**
@@ -42,7 +40,7 @@ interface ApplicationManager {
 
 }
 
-private class ApplicationManagerImpl(private val ctx: Context) : ApplicationManager {
+private class ApplicationManagerImpl(ctx: Context) : ApplicationManager {
 
 	private val pkgManager = ctx.packageManager
 

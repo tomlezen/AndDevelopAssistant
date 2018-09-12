@@ -52,7 +52,7 @@ internal fun executeSafely(action: () -> Unit): Boolean {
 		action.invoke()
 		true
 	} catch (t: Throwable) {
-		t.printStackTrace()
+//		t.printStackTrace()
 		false
 	}
 }
@@ -167,7 +167,7 @@ internal fun handleRequestSafely(errorMsg: String? = null, action: () -> NanoHTT
 		try {
 			action.invoke()
 		} catch (t: Throwable) {
-			t.printStackTrace()
+//			t.printStackTrace()
 			responseError(errorMsg = errorMsg ?: "数据处理出错${t.message}")
 		}
 

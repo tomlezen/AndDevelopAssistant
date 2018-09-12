@@ -43,7 +43,7 @@ object Initializer {
         }
       }
     } catch (ex: SocketException) {
-      ex.printStackTrace()
+//      ex.printStackTrace()
     }
 
     return "没有获取到ip地址"
