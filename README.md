@@ -8,14 +8,14 @@
 
 数据库相关处理思路参考[Android-Debug-Database](https://github.com/amitshekhariitbhu/Android-Debug-Database)
 
-web端使用Angular6开发
+web端使用Angular6开发，因为个人设备和能力有限，没有在太多手机上测试，不能保证100%兼容每台手机
 
 ## 如何使用
 
 ```
 只需要在gradle文件中添加一下代码：
-Gradle3.0以上： debugImplementation 'com.tlz.tools:androiddebuglib:0.0.4'
-Gradle3.0以下： debugCompile 'com.tlz.tools:androiddebuglib:0.0.4'
+Gradle3.0以上： debugImplementation 'com.tlz.tools:ada:0.0.1'
+Gradle3.0以下： debugCompile 'com.tlz.tools:ada:0.0.1'
 ```
 
 启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为DebuggerWebServer的日志，其中会输入完整的访问地址。
