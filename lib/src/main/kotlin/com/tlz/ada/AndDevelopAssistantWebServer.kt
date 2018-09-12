@@ -7,6 +7,7 @@ import android.util.Log
 import android.util.Pair
 import android.widget.Toast
 import com.tlz.ada.handlers.*
+import com.tlz.ada.socket.AndDevelopAssistantWSD
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
 
@@ -22,7 +23,7 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
 
 	private val dataProvider: DataProvider by lazy { DataProviderImpl(ctx, gson) }
 	private val appManager by lazy { ApplicationManager(ctx) }
-	private val wsd by lazy { DebuggerWSD() }
+	private val wsd by lazy { AndDevelopAssistantWSD() }
 
 	/** 所有请求处理器. */
 	private val handlers = mutableListOf<RequestHandler>()

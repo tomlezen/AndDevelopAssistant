@@ -24,8 +24,8 @@ allprojects {
         uploadName = "AndDevelopAssistant"
         packaging = "aar"
         desc = ""
-        website = "https://bitbucket.org/tomlezen/androiddebuglib"
-        gitUrl = "https://tomlezen@bitbucket.org/tomlezen/androiddebuglib.git"
+        website = "https://github.com/tomlezen/AndDevelopAssistant"
+        gitUrl = "https://github.com/tomlezen/AndDevelopAssistant.git"
         publishVersion = "0.0.4"
         autoPublish = true
     }

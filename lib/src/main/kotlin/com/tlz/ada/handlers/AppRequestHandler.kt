@@ -3,15 +3,13 @@ package com.tlz.ada.handlers
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import com.tlz.ada.ApplicationManager
+import com.tlz.ada.*
 import com.tlz.ada.ConstUtils.FILTER
 import com.tlz.ada.ConstUtils.PAGE_INDEX
 import com.tlz.ada.ConstUtils.PAGE_SIZE
 import com.tlz.ada.ConstUtils.PKG
 import com.tlz.ada.ConstUtils.SEARCH
-import com.tlz.ada.handleRequestSafely
 import com.tlz.ada.models.Response
-import com.tlz.ada.verifyParams
 import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
