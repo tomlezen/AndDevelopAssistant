@@ -5,6 +5,7 @@
 - 手机所有应用的信息查看，如：Activity、Service、权限等信息，也可以直接下载手机上的应用到电脑上
 - 通过web直接安装应用到手机上
 - 手机文件管理，包括新增文件、文件夹，删除文件，批量上传文件都手机指定文件夹中
+- 应用截图
 
 数据库相关处理思路参考[Android-Debug-Database](https://github.com/amitshekhariitbhu/Android-Debug-Database)
 
@@ -14,12 +15,11 @@ web端使用Angular6开发，因为个人设备和能力有限，没有在太多
 
 ```
 只需要在gradle文件中添加一下代码：
-Gradle3.0以上： debugImplementation 'com.tlz.tools:ada:0.0.4'
-Gradle3.0以下： debugCompile 'com.tlz.tools:ada:0.0.4'
+Gradle3.0以上： debugImplementation 'com.tlz.tools:ada:0.0.5'
+Gradle3.0以下： debugCompile 'com.tlz.tools:ada:0.0.5'
 ```
 
-启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AndDevelopAssistantWebServer的日志，其中会输入完整的访问地址。
-日志记录默认未开启，需要在web端日志窗口左上角点击开启
+启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AndDevelopAssistantWebServer的日志，其中会输入完整的访问地址。日志默认未开启，需要在web端日志窗口左上角点击开启
 
 ## 如何设置web访问端口
 
