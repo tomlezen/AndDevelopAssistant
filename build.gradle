@@ -4,7 +4,7 @@ buildscript {
     ext.kotlin_version = '1.2.10'
     repositories {
         google()
-        maven { url 'https://maven.mlxcdn.com/' }
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
 //        jcenter(){ url 'https://jcenter.bintray.com/'}
     }
     dependencies {
@@ -31,7 +31,7 @@ allprojects {
     }
     repositories {
         google()
-        maven { url 'https://maven.mlxcdn.com/' }
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
 //        jcenter(){ url 'https://jcenter.bintray.com/'}
     }
 }

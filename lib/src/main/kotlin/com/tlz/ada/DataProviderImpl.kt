@@ -1,7 +1,9 @@
 package com.tlz.ada
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import com.tlz.ada.models.KeyValue
 import com.tlz.ada.models.TableFieldInfo
@@ -289,6 +291,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
 	/**
 	 * 获取表的数据信息.
 	 */
+	@SuppressLint("LongLogTag")
 	private fun getTableInfo(db: SQLiteDatabase, tName: String): List<TableFieldInfo> {
 		val data = mutableListOf<TableFieldInfo>()
 		var cursor: Cursor? = null
@@ -303,14 +306,16 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
 						var name = "Null"
 						var nullable = false
 						var defValue: String? = null
-						for (i in 0 until it.columnCount) {
-							val columnName = it.getColumnName(i)
-							when (columnName) {
-								ConstUtils.PK -> isPrimary = it.getInt(i) == 1
-								ConstUtils.TYPE -> type = it.getString(i)
-								ConstUtils.NAME -> name = it.getString(i)
-								ConstUtils.NULLABLE -> nullable = it.getInt(i) == 1
-								ConstUtils.DEF_VALUE -> defValue = it.getString(i)
+						executeSafely {
+							for (i in 0 until it.columnCount) {
+								val columnName = it.getColumnName(i)
+								when (columnName) {
+									ConstUtils.PK -> isPrimary = it.getInt(i) == 1
+									ConstUtils.TYPE -> type = it.getString(i)
+									ConstUtils.NAME -> name = it.getString(i)
+									ConstUtils.NULLABLE -> nullable = it.getInt(i) == 1
+									ConstUtils.DEF_VALUE -> defValue = it.getString(i)
+								}
 							}
 						}
 						data.add(TableFieldInfo(name, type, isPrimary, nullable, defValue))
@@ -319,7 +324,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
 				it.close()
 			}
 		} catch (e: Exception) {
-//			e.printStackTrace()
+			Log.e(AndDevelopAssistantWebServer.TAG, "Android调试辅助初始化失败")
 		} finally {
 			executeSafely { cursor?.close() }
 			closeDatabase()
