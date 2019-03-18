@@ -5,7 +5,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.util.Pair
-import com.tlz.ada.handlers.*
+import com.tlz.ada.handlers.AppRequestHandler
+import com.tlz.ada.handlers.DbRequestHandler
+import com.tlz.ada.handlers.DefaultRequestHandler
+import com.tlz.ada.handlers.FileRequestHandler
+import com.tlz.ada.handlers.InitRequestHandler
+import com.tlz.ada.handlers.LogRequestHandler
+import com.tlz.ada.handlers.RequestHandler
+import com.tlz.ada.handlers.ScreenShotHandler
 import com.tlz.ada.socket.AndDevelopAssistantWSD
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
@@ -21,6 +28,7 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
     private val dataProvider: DataProvider by lazy { DataProviderImpl(ctx, gson) }
     private val appManager by lazy { ApplicationManager(ctx) }
     private val wsd by lazy { AndDevelopAssistantWSD() }
+    private val activityLifeCycleHooker by lazy { ActivityLifeCycleHooker(ctx) }
 
     /** 所有请求处理器. */
     private val handlers = mutableListOf<RequestHandler>()
@@ -55,6 +63,7 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
                     handlers.add(DbRequestHandler(dataProvider))
                     handlers.add(AppRequestHandler(ctx, appManager))
                     handlers.add(FileRequestHandler(this))
+                    handlers.add(ScreenShotHandler(activityLifeCycleHooker))
                     handlers.add(DefaultRequestHandler(ctx))
 
                     start(10000)
@@ -104,6 +113,10 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
             instance?.startServer()
         }
 
+        /**
+         * 设置自定义数据库文件.
+         * @param files Map<String, Pair<File, String>>
+         */
         fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
             instance?.setCustomDatabaseFiles(files)
         }

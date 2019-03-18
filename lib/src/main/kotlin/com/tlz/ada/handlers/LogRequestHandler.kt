@@ -1,11 +1,23 @@
 package com.tlz.ada.handlers
 
 import android.content.Context
-import android.util.Log.*
-import com.tlz.ada.*
+import android.util.Log.ASSERT
+import android.util.Log.DEBUG
+import android.util.Log.ERROR
+import android.util.Log.INFO
+import android.util.Log.VERBOSE
+import android.util.Log.WARN
+import com.tlz.ada.ConstUtils
+import com.tlz.ada.LogcatReader
+import com.tlz.ada.gson
+import com.tlz.ada.handleRequestSafely
 import com.tlz.ada.models.FileInfo
 import com.tlz.ada.models.Log
+import com.tlz.ada.responseData
+import com.tlz.ada.responseError
 import com.tlz.ada.socket.AndDevelopAssistantWSD
+import com.tlz.ada.toResponse
+import com.tlz.ada.verifyParams
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
 import java.text.SimpleDateFormat
@@ -52,6 +64,11 @@ class LogRequestHandler(
 		}
 	}
 
+	init {
+		// 自动开始日志记录功能
+		logcatReader.start()
+	}
+
 	private fun String.toLogObj() =
 			when {
 				contains("V/") -> Log("V", VERBOSE, this, this)
@@ -80,7 +97,7 @@ class LogRequestHandler(
 				"/api/log/list" -> handleLogListRequest()
 				"/api/log/delete" -> session.verifyParams(::handleLogDeleteRequest, ConstUtils.FILES)
 				"/api/log/download" -> session.verifyParams(::handleLogDownloadRequest, ConstUtils.FILE_NAME)
-				else -> wsd.onRequest(session)?.also { logcatReader.start() }
+				else -> wsd.onRequest(session)
 			}
 
 	/**
