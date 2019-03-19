@@ -17,7 +17,7 @@ class AndDevelopAssistantInitProvider : ContentProvider() {
   override fun query(uri: Uri?, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor? = null
 
   override fun onCreate(): Boolean {
-    AndDevelopAssistantWebServer.start(context)
+    AndDevelopAssistantWebServer.start(context ?: return true)
     return true
   }
 

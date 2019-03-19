@@ -39,7 +39,7 @@ class ActivityLifeCycleHooker(private val ctx: Context) {
         }
 
         override fun onActivityStopped(activity: Activity?) {
-            if (activity == currentActivityInstance){
+            if (activity == currentActivityInstance) {
                 currentActivityInstance = null
             }
         }
@@ -50,7 +50,7 @@ class ActivityLifeCycleHooker(private val ctx: Context) {
 
     }
 
-    init {
+    fun install() {
         (ctx as Application).registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
     }
 

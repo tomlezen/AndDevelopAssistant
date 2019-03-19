@@ -327,7 +327,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
       Log.e(AndDevelopAssistantWebServer.TAG, "获取表信息失败: $tName", e)
     } finally {
       executeSafely { cursor?.close() }
-      closeDatabase()
+//      closeDatabase()
     }
     return data
   }
@@ -358,7 +358,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
     SQLiteDatabase.loadLibs(ctx)
     databaseFiles[databaseName]?.let {
       database = SQLiteDatabase.openOrCreateDatabase(it.first, if (it.second.isEmpty()) null else it.second, null)
-      databaseOpen = true
+      databaseOpen = database?.isOpen == true
     }
   }
 

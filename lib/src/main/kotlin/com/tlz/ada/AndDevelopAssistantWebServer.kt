@@ -51,6 +51,7 @@ class AndDevelopAssistantWebServer private constructor(internal val ctx: Context
     @SuppressLint("LongLogTag")
     fun startServer() {
         if (!isRunning) {
+            activityLifeCycleHooker.install()
             tempFileManagerFactory = AndTempFileManagerFactory(ctx)
             serverAddress = "${Initializer.getPhoneIp()}:$port"
             Thread {
