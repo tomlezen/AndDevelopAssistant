@@ -21,7 +21,7 @@ allprojects {
         userOrg = "tomlezen"
         repoName = "tools"
         groupId = "com.tlz.tools"
-        artifactId = "ada"
+        artifactId = "AndDevelopAssistant"
         uploadName = "AndDevelopAssistant"
         packaging = "aar"
         desc = ""
