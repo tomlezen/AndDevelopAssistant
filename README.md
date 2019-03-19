@@ -1,4 +1,4 @@
-# Android开发辅助依赖库
+# Android开发辅助依赖库（之前不小心把bintray仓库删除了，现在gradle有所变化）
 - 数据库增删查改
 - SharePreferences修改、删除
 - 应用实时日志查看和历史日志查看，也支持历史日志下载与删除
@@ -15,8 +15,8 @@ web端使用Angular6开发，因为个人设备和能力有限，没有在太多
 
 ```
 只需要在gradle文件中添加一下代码：
-Gradle3.0以上： debugImplementation 'com.tlz.tools:ada:0.0.5'
-Gradle3.0以下： debugCompile 'com.tlz.tools:ada:0.0.5'
+Gradle3.0以上： debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.5'
+Gradle3.0以下： debugCompile 'com.tlz.tools:AndDevelopAssistant:0.0.5'
 ```
 
 启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AndDevelopAssistantWebServer的日志，其中会输入完整的访问地址。日志默认未开启，需要在web端日志窗口左上角点击开启
