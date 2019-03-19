@@ -39,7 +39,9 @@ class ActivityLifeCycleHooker(private val ctx: Context) {
         }
 
         override fun onActivityStopped(activity: Activity?) {
-            currentActivityInstance = null
+            if (activity == currentActivityInstance){
+                currentActivityInstance = null
+            }
         }
 
         override fun onActivityCreated(activity: Activity?, savedInstanceState: Bundle?) {

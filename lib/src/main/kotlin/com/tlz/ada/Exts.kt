@@ -15,12 +15,7 @@ import com.google.gson.GsonBuilder
 import com.tlz.ada.models.FileInfo
 import com.tlz.ada.models.Response
 import fi.iki.elonen.NanoHTTPD
-import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.InputStream
-import java.io.InputStreamReader
+import java.io.*
 
 
 val gson: Gson by lazy { GsonBuilder().create() }
@@ -59,7 +54,7 @@ internal fun executeSafely(action: () -> Unit): Boolean {
         action.invoke()
         true
     } catch (t: Throwable) {
-        Log.e(AndDevelopAssistantWebServer.TAG, "Android调试辅助初始化失败")
+        Log.e(AndDevelopAssistantWebServer.TAG, "", t)
         false
     }
 }
@@ -175,7 +170,7 @@ internal fun handleRequestSafely(errorMsg: String? = null, action: () -> NanoHTT
     try {
         action.invoke()
     } catch (t: Throwable) {
-        Log.e(AndDevelopAssistantWebServer.TAG, "Android调试辅助初始化失败")
+        Log.e(AndDevelopAssistantWebServer.TAG, "", t)
         responseError(errorMsg = errorMsg ?: "数据处理出错${t.message}")
     }
 

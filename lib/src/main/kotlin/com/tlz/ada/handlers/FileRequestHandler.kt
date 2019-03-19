@@ -113,9 +113,9 @@ class FileRequestHandler(private val webServer: AndDevelopAssistantWebServer) : 
 				session.parseBody(parseBody)
 				if (parseBody.isNotEmpty()) {
 					val filePaths = mutableListOf<String>()
-					parseBody.forEach { t, u ->
-						val cacheFile = File(u)
-						val filePath = "$path/${session.parms[t]}"
+					parseBody.forEach {
+						val cacheFile = File(it.value)
+						val filePath = "$path/${session.parms[it.key]}"
 						cacheFile.renameTo(File(filePath))
 						filePaths.add(filePath)
 					}
