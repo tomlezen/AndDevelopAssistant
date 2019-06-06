@@ -19,7 +19,7 @@ Gradle3.0以上： debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.5'
 Gradle3.0以下： debugCompile 'com.tlz.tools:AndDevelopAssistant:0.0.5'
 ```
 
-启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AndDevelopAssistantWebServer的日志，其中会输入完整的访问地址。日志默认未开启，需要在web端日志窗口左上角点击开启
+启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AndDevelopAssistantWebServer的日志，其中会输入完整的访问地址。日志记录功能默认未开启
 
 ## 如何设置web访问端口
 
