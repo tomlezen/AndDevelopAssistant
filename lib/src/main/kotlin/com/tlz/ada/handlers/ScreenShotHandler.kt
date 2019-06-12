@@ -1,12 +1,14 @@
 package com.tlz.ada.handlers
 
 import android.graphics.Bitmap
-import com.tlz.ada.ActivityLifeCycleHooker
+import com.tlz.ada.ActivityLifeCycleListener
 import com.tlz.ada.handleRequestSafely
 import com.tlz.ada.responseError
-import com.tlz.ada.toInputStream
 import com.tlz.ada.verifyParams
 import fi.iki.elonen.NanoHTTPD
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 
 
 /**
@@ -14,27 +16,37 @@ import fi.iki.elonen.NanoHTTPD
  * Data: 2019/3/18.
  * Time: 16:26.
  */
-class ScreenShotHandler(private val activityLifeCycleHooker: ActivityLifeCycleHooker) : RequestHandler {
+class ScreenShotHandler(private val activityLifeCycleHooker: ActivityLifeCycleListener) : RequestHandler {
 
-    override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
-        when (session.uri) {
-            "/api/app/screenshot" -> session.verifyParams(::handleScreenShotRequest)
-            else -> null
-        }
+  override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
+      when (session.uri) {
+        "/api/app/screenshot" -> session.verifyParams(::handleScreenShotRequest)
+        else -> null
+      }
 
-    /**
-     * 处理截图请求.
-     * @param session NanoHTTPD.IHTTPSession
-     * @return NanoHTTPD.Response
-     */
-    private fun handleScreenShotRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
-        handleRequestSafely {
-            activityLifeCycleHooker.currentActivityInstance?.window?.decorView?.let { dView ->
-                dView.isDrawingCacheEnabled = true
-                dView.buildDrawingCache()
-                val bitmap = Bitmap.createBitmap(dView.drawingCache)
-                NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "image/png", bitmap.toInputStream())
-            } ?: responseError(errorMsg = "app未在前台")
-        }
+  /**
+   * 处理截图请求.
+   * @param session NanoHTTPD.IHTTPSession
+   * @return NanoHTTPD.Response
+   */
+  private fun handleScreenShotRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+      handleRequestSafely {
+        activityLifeCycleHooker.currentActivityInstance?.window?.decorView?.let { dView ->
+          dView.isDrawingCacheEnabled = true
+          dView.buildDrawingCache()
+          NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "image/png", Bitmap.createBitmap(dView.drawingCache).toInputStream())
+        } ?: responseError(errorMsg = "app未在前台")
+      }
+
+  /**
+   * Bitmap转输入流.
+   * @receiver Bitmap
+   * @return InputStream
+   */
+  private fun Bitmap.toInputStream(): InputStream =
+      ByteArrayOutputStream().use {
+        compress(Bitmap.CompressFormat.JPEG, 100, it)
+        ByteArrayInputStream(it.toByteArray())
+      }
 
 }

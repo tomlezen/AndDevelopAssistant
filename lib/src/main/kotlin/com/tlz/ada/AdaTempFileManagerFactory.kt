@@ -9,7 +9,7 @@ import java.io.File
  * Data: 2018/9/5.
  * Time: 12:51.
  */
-class AndTempFileManagerFactory(private val ctx: Context) : NanoHTTPD.TempFileManagerFactory {
+class AdaTempFileManagerFactory(private val ctx: Context) : NanoHTTPD.TempFileManagerFactory {
 
 	override fun create(): NanoHTTPD.TempFileManager =
 			AndTempFileManager(ctx.externalCacheDir.absolutePath + "/AndDevelopAssistant")

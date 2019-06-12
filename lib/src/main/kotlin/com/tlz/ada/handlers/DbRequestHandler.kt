@@ -1,14 +1,14 @@
 package com.tlz.ada.handlers
 
 import com.tlz.ada.*
-import com.tlz.ada.ConstUtils.DATA
-import com.tlz.ada.ConstUtils.DB_NAME
-import com.tlz.ada.ConstUtils.PAGE_INDEX
-import com.tlz.ada.ConstUtils.PAGE_SIZE
-import com.tlz.ada.ConstUtils.SQL
-import com.tlz.ada.ConstUtils.TABLE_NAME
-import com.tlz.ada.ConstUtils.WHERE
-import com.tlz.ada.DataProvider
+import com.tlz.ada.AdaConstUtils.DATA
+import com.tlz.ada.AdaConstUtils.DB_NAME
+import com.tlz.ada.AdaConstUtils.PAGE_INDEX
+import com.tlz.ada.AdaConstUtils.PAGE_SIZE
+import com.tlz.ada.AdaConstUtils.SQL
+import com.tlz.ada.AdaConstUtils.TABLE_NAME
+import com.tlz.ada.AdaConstUtils.WHERE
+import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.models.DataResponse
 import com.tlz.ada.models.KeyValue
 import fi.iki.elonen.NanoHTTPD
@@ -20,7 +20,7 @@ import fi.iki.elonen.NanoHTTPD
  * Data: 2018/9/5.
  * Time: 14:50.
  */
-class DbRequestHandler(private val dataProvider: DataProvider) : RequestHandler {
+class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandler {
 
 	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? {
 		val uri = session.uri

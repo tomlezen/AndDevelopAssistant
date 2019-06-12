@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
     if (BuildConfig.DEBUG) {
       try {
         //初始化自定义数据库文件
-        val initializer = Class.forName("com.tlz.ada.Initializer")
+        val initializer = Class.forName("com.tlz.ada.AdaProvider")
         val method = initializer.getMethod("customDatabaseFiles", Map::class.java)
         val customDatabaseFiles = HashMap<String, Pair<File, String>>()
         customDatabaseFiles["Custom.db"] = Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), "")

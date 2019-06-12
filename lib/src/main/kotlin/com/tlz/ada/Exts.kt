@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.support.v4.content.ContextCompat
@@ -15,13 +14,15 @@ import com.google.gson.GsonBuilder
 import com.tlz.ada.models.FileInfo
 import com.tlz.ada.models.Response
 import fi.iki.elonen.NanoHTTPD
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
 
 
 val gson: Gson by lazy { GsonBuilder().create() }
 
 fun rMin(v1: Int, v2: Int): Int {
-    return if (v2 == -1 || v2 > v1) v1 else v2
+  return if (v2 == -1 || v2 > v1) v1 else v2
 }
 
 
@@ -31,11 +32,13 @@ fun rMin(v1: Int, v2: Int): Int {
  * @param key String
  * @return String
  */
-internal fun Context.metaData(key: String): String = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getString(key)
-    ?: ""
+internal fun Context.metaData(key: String): String =
+    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getString(key)
+        ?: ""
 
-internal fun Context.metaDataInt(key: String, default: Int = 0): Int = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getInt(key, default)
-    ?: default
+internal fun Context.metaDataInt(key: String, default: Int = 0): Int =
+    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getInt(key, default)
+        ?: default
 
 /**
  * 读取html文件.
@@ -48,15 +51,14 @@ internal fun String.readHtml(ctx: Context): String = ctx.assets.open("web$this")
 /**
  * 执行代码并捕捉异常
  */
-@SuppressLint("LongLogTag")
 internal fun executeSafely(action: () -> Unit): Boolean {
-    return try {
-        action.invoke()
-        true
-    } catch (t: Throwable) {
-        Log.e(AndDevelopAssistantWebServer.TAG, "", t)
-        false
-    }
+  return try {
+    action.invoke()
+    true
+  } catch (t: Throwable) {
+//        Log.e(AdaWebServer.TAG, "", t)
+    false
+  }
 }
 
 /**
@@ -65,17 +67,17 @@ internal fun executeSafely(action: () -> Unit): Boolean {
  * @return List<String>
  */
 internal fun cmd(cmd: String): List<String> {
-    val p = Runtime.getRuntime().exec(cmd)
-    p.waitFor()
-    val read = BufferedReader(InputStreamReader(p.inputStream))
-    val lines = mutableListOf<String>()
-    var line: String? = read.readLine()
-    while (line != null) {
-        lines.add(line)
-        line = read.readLine()
-    }
-    read.close()
-    return lines
+  val p = Runtime.getRuntime().exec(cmd)
+  p.waitFor()
+  val read = BufferedReader(InputStreamReader(p.inputStream))
+  val lines = mutableListOf<String>()
+  var line: String? = read.readLine()
+  while (line != null) {
+    lines.add(line)
+    line = read.readLine()
+  }
+  read.close()
+  return lines
 }
 
 /**
@@ -85,15 +87,15 @@ internal fun cmd(cmd: String): List<String> {
  * @return Process
  */
 internal fun cmd(cmd: String, onResult: (String) -> Unit): Process {
-    val p = Runtime.getRuntime().exec(cmd)
-    val read = BufferedReader(InputStreamReader(p.inputStream))
-    var line: String? = read.readLine()
-    while (line != null) {
-        onResult.invoke(line)
-        line = read.readLine()
-    }
-    read.close()
-    return p
+  val p = Runtime.getRuntime().exec(cmd)
+  val read = BufferedReader(InputStreamReader(p.inputStream))
+  var line: String? = read.readLine()
+  while (line != null) {
+    onResult.invoke(line)
+    line = read.readLine()
+  }
+  read.close()
+  return p
 }
 
 /**
@@ -102,16 +104,16 @@ internal fun cmd(cmd: String, onResult: (String) -> Unit): Process {
  * @param apkFile File
  */
 internal fun Context.installApk(apkFile: File) {
-    val install = Intent(Intent.ACTION_VIEW)
-    install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        val apkUri = FileProvider.getUriForFile(this, "$packageName.AndDevelopAssistantFileProvider", apkFile)
-        install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        install.setDataAndType(apkUri, "application/vnd.android.package-archive");
-    } else {
-        install.setDataAndType(Uri.parse("file://" + apkFile.absolutePath), "application/vnd.android.package-archive");
-    }
-    startActivity(install)
+  val install = Intent(Intent.ACTION_VIEW)
+  install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+    val apkUri = FileProvider.getUriForFile(this, "$packageName.AndDevelopAssistantFileProvider", apkFile)
+    install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    install.setDataAndType(apkUri, "application/vnd.android.package-archive");
+  } else {
+    install.setDataAndType(Uri.parse("file://" + apkFile.absolutePath), "application/vnd.android.package-archive");
+  }
+  startActivity(install)
 }
 
 /**
@@ -120,29 +122,29 @@ internal fun Context.installApk(apkFile: File) {
  * @return List<FileInfo>
  */
 fun String.listFiles(): List<FileInfo> {
-    val dirContent = mutableListOf<FileInfo>()
-    val dirFile = File(this)
-    if (dirFile.exists() && dirFile.canRead()) {
-        dirFile.listFiles()?.mapTo(dirContent) {
-            FileInfo(
-                it.name,
-                it.isDirectory,
-                it.absolutePath,
-                it.length(),
-                it.canRead(),
-                it.canWrite(),
-                it.isHidden,
-                it.lastModified()
-            )
-        }
+  val dirContent = mutableListOf<FileInfo>()
+  val dirFile = File(this)
+  if (dirFile.exists() && dirFile.canRead()) {
+    dirFile.listFiles()?.mapTo(dirContent) {
+      FileInfo(
+          it.name,
+          it.isDirectory,
+          it.absolutePath,
+          it.length(),
+          it.canRead(),
+          it.canWrite(),
+          it.isHidden,
+          it.lastModified()
+      )
     }
-    return dirContent
+  }
+  return dirContent
 }
 
 fun response(type: String, html: String, cacheTime: String): NanoHTTPD.Response =
     NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, type, html).apply {
-        addHeader("Cache-Control", "public")
-        addHeader("Cache-Control", "max-age=$cacheTime")
+      addHeader("Cache-Control", "public")
+      addHeader("Cache-Control", "max-age=$cacheTime")
     }
 
 fun response(type: String, html: String): NanoHTTPD.Response =
@@ -155,7 +157,7 @@ fun responseHtml(html: String): NanoHTTPD.Response =
     NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_HTML, html)
 
 fun responseError(status: Int = 401, errorMsg: String): NanoHTTPD.Response =
-    responseData(com.tlz.ada.models.Response(status, null, errorMsg))
+    responseData(Response(status, null, errorMsg))
 
 internal fun Any.toResponse(): Response = Response(data = this)
 
@@ -168,10 +170,10 @@ internal fun Any.toResponse(): Response = Response(data = this)
 @SuppressLint("LongLogTag")
 internal fun handleRequestSafely(errorMsg: String? = null, action: () -> NanoHTTPD.Response): NanoHTTPD.Response =
     try {
-        action.invoke()
+      action.invoke()
     } catch (t: Throwable) {
-        Log.e(AndDevelopAssistantWebServer.TAG, "", t)
-        responseError(errorMsg = errorMsg ?: "数据处理出错${t.message}")
+//      Log.e(AdaWebServer.TAG, "", t)
+      responseError(errorMsg = errorMsg ?: "数据处理出错${t.message}")
     }
 
 /**
@@ -180,12 +182,12 @@ internal fun handleRequestSafely(errorMsg: String? = null, action: () -> NanoHTT
  * @param params Array<out String>
  */
 fun NanoHTTPD.IHTTPSession.verifyParams(doOnPass: (NanoHTTPD.IHTTPSession) -> NanoHTTPD.Response, vararg params: String):
-        NanoHTTPD.Response {
-    return if (params.any { !this.parms.containsKey(it) }) {
-        NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "请求参数错误")
-    } else {
-        doOnPass(this)
-    }
+    NanoHTTPD.Response {
+  return if (params.any { !this.parms.containsKey(it) }) {
+    NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "请求参数错误")
+  } else {
+    doOnPass(this)
+  }
 }
 
 /**
@@ -198,12 +200,11 @@ fun Context.isPermissionsGranted(vararg permissions: String): Boolean =
     permissions.all { ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED }
 
 /**
- * Bitmap转输入流.
- * @receiver Bitmap
- * @return InputStream
+ * 服务器端口.
+ * @receiver Context
+ * @return Int
  */
-fun Bitmap.toInputStream(): InputStream =
-    ByteArrayOutputStream().use {
-        compress(Bitmap.CompressFormat.JPEG, 100, it)
-        ByteArrayInputStream(it.toByteArray())
-    }
+internal fun Context.adaServerPort() =
+    runCatching {
+      metaDataInt("DEBUG_PORT", 10000)
+    }.getOrNull() ?: 10000

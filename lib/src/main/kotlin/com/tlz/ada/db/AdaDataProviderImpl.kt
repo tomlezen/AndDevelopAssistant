@@ -1,11 +1,13 @@
-package com.tlz.ada
+package com.tlz.ada.db
 
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
-import android.util.Log
 import android.util.Pair
 import com.google.gson.Gson
+import com.tlz.ada.AdaConstUtils
+import com.tlz.ada.executeSafely
+import com.tlz.ada.metaData
 import com.tlz.ada.models.KeyValue
 import com.tlz.ada.models.TableFieldInfo
 import com.tlz.ada.models.TableInfo
@@ -20,7 +22,7 @@ import java.util.*
  * Data: 2018/1/27.
  * Time: 16:01.
  */
-class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataProvider {
+class AdaDataProviderImpl(private val ctx: Context, private val gson: Gson) : AdaDataProvider {
 
   private var database: SQLiteDatabase? = null
   private var databaseOpen = false
@@ -44,7 +46,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
   }
 
   override fun getAllTable(databaseName: String): TableWrapper {
-    val wrapper = if (databaseName == ConstUtils.PREFS) getSpTags() else getDatabaseTables(databaseName)
+    val wrapper = if (databaseName == AdaConstUtils.PREFS) getSpTags() else getDatabaseTables(databaseName)
     tableWrapperMap[databaseName] = wrapper
     return wrapper
   }
@@ -55,13 +57,13 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
       val sharePreferences = ctx.getSharedPreferences(tName, Context.MODE_PRIVATE)
       for (entry in sharePreferences.all.entries) {
         val type = when {
-          entry.value is String -> ConstUtils.TYPE_TEXT
-          entry.value is Int -> ConstUtils.TYPE_INTEGER
-          entry.value is Long -> ConstUtils.TYPE_LONG
-          entry.value is Float -> ConstUtils.TYPE_FLOAT
-          entry.value is Boolean -> ConstUtils.TYPE_BOOLEAN
-          entry.value is Set<*> -> ConstUtils.TYPE_STRING_SET
-          else -> ConstUtils.TYPE_TEXT
+          entry.value is String -> AdaConstUtils.TYPE_TEXT
+          entry.value is Int -> AdaConstUtils.TYPE_INTEGER
+          entry.value is Long -> AdaConstUtils.TYPE_LONG
+          entry.value is Float -> AdaConstUtils.TYPE_FLOAT
+          entry.value is Boolean -> AdaConstUtils.TYPE_BOOLEAN
+          entry.value is Set<*> -> AdaConstUtils.TYPE_STRING_SET
+          else -> AdaConstUtils.TYPE_TEXT
         }
         data.add(KeyValue(entry.key, entry.value?.toString() ?: "null", type))
       }
@@ -142,11 +144,11 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
       val editor = ctx.getSharedPreferences(tName, Context.MODE_PRIVATE).edit()
       val keyValue = content.first()
       when (keyValue.type) {
-        ConstUtils.TYPE_INTEGER -> editor.putInt(keyValue.key, keyValue.value!!.toInt())
-        ConstUtils.TYPE_FLOAT -> editor.putFloat(keyValue.key, keyValue.value!!.toFloat())
-        ConstUtils.TYPE_LONG -> editor.putLong(keyValue.key, keyValue.value!!.toLong())
-        ConstUtils.TYPE_BOOLEAN -> editor.putBoolean(keyValue.key, keyValue.value!!.toBoolean())
-        ConstUtils.TYPE_STRING_SET -> editor.putStringSet(keyValue.key, gson.fromJson<Array<String>>(keyValue.value, Array<String>::class.java).let { it ->
+        AdaConstUtils.TYPE_INTEGER -> editor.putInt(keyValue.key, keyValue.value!!.toInt())
+        AdaConstUtils.TYPE_FLOAT -> editor.putFloat(keyValue.key, keyValue.value!!.toFloat())
+        AdaConstUtils.TYPE_LONG -> editor.putLong(keyValue.key, keyValue.value!!.toLong())
+        AdaConstUtils.TYPE_BOOLEAN -> editor.putBoolean(keyValue.key, keyValue.value!!.toBoolean())
+        AdaConstUtils.TYPE_STRING_SET -> editor.putStringSet(keyValue.key, gson.fromJson<Array<String>>(keyValue.value, Array<String>::class.java).let { it ->
           val set = mutableSetOf<String>()
           it.mapTo(set) { it }
           set
@@ -162,8 +164,8 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
           val contentValues = ContentValues()
           content.forEach {
             when (it.type) {
-              ConstUtils.TYPE_INTEGER -> contentValues.put(it.key, it.value?.toIntOrNull())
-              ConstUtils.TYPE_REAL -> contentValues.put(it.key, it.value?.toDoubleOrNull())
+              AdaConstUtils.TYPE_INTEGER -> contentValues.put(it.key, it.value?.toIntOrNull())
+              AdaConstUtils.TYPE_REAL -> contentValues.put(it.key, it.value?.toDoubleOrNull())
               else -> contentValues.put(it.key, it.value)
             }
           }
@@ -182,8 +184,8 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
         val contentValues = ContentValues()
         content.forEach { keyValue ->
           when (keyValue.type) {
-            ConstUtils.TYPE_INTEGER -> contentValues.put(keyValue.key, keyValue.value?.toIntOrNull())
-            ConstUtils.TYPE_REAL -> contentValues.put(keyValue.key, keyValue.value?.toDoubleOrNull())
+            AdaConstUtils.TYPE_INTEGER -> contentValues.put(keyValue.key, keyValue.value?.toIntOrNull())
+            AdaConstUtils.TYPE_REAL -> contentValues.put(keyValue.key, keyValue.value?.toDoubleOrNull())
             else -> contentValues.put(keyValue.key, keyValue.value)
           }
         }
@@ -240,7 +242,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
     }
 
     //最后加载SharePreferences
-    databaseFiles[ConstUtils.PREFS] = Pair(File(""), "")
+    databaseFiles[AdaConstUtils.PREFS] = Pair(File(""), "")
 
     return databaseFiles
   }
@@ -310,11 +312,11 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
               for (i in 0 until it.columnCount) {
                 val columnName = it.getColumnName(i)
                 when (columnName) {
-                  ConstUtils.PK -> isPrimary = it.getInt(i) == 1
-                  ConstUtils.TYPE -> type = it.getString(i)
-                  ConstUtils.NAME -> name = it.getString(i)
-                  ConstUtils.NULLABLE -> nullable = it.getInt(i) == 1
-                  ConstUtils.DEF_VALUE -> defValue = it.getString(i)
+                  AdaConstUtils.PK -> isPrimary = it.getInt(i) == 1
+                  AdaConstUtils.TYPE -> type = it.getString(i)
+                  AdaConstUtils.NAME -> name = it.getString(i)
+                  AdaConstUtils.NULLABLE -> nullable = it.getInt(i) == 1
+                  AdaConstUtils.DEF_VALUE -> defValue = it.getString(i)
                 }
               }
             }
@@ -324,7 +326,7 @@ class DataProviderImpl(private val ctx: Context, private val gson: Gson) : DataP
         it.close()
       }
     } catch (e: Exception) {
-      Log.e(AndDevelopAssistantWebServer.TAG, "获取表信息失败: $tName", e)
+//      Log.e(AdaWebServer.TAG, "获取表信息失败: $tName", e)
     } finally {
       executeSafely { cursor?.close() }
 //      closeDatabase()

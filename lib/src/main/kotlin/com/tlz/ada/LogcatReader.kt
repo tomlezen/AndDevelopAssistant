@@ -1,8 +1,5 @@
 package com.tlz.ada
 
-import java.io.PrintWriter
-import java.io.StringWriter
-
 
 /**
  * 日志读取.
@@ -44,6 +41,7 @@ class LogcatReader(private val onLogcat: (String) -> Unit) {
 //		onLogcat(sb.toString())
 //	}
 
+	@Synchronized
 	fun start() {
 		// 避免重复开启.
 		if (!isRunning) {
@@ -60,8 +58,8 @@ class LogcatReader(private val onLogcat: (String) -> Unit) {
 		}
 	}
 
-	fun stop() {
-		p?.destroy()
-	}
+//	fun stop() {
+//		p?.destroy()
+//	}
 
 }

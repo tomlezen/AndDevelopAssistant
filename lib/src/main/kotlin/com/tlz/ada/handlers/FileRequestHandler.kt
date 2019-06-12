@@ -2,9 +2,9 @@ package com.tlz.ada.handlers
 
 import android.os.Environment
 import com.tlz.ada.*
-import com.tlz.ada.ConstUtils.FILE_NAME
-import com.tlz.ada.ConstUtils.FOLDER_NAME
-import com.tlz.ada.ConstUtils.PATH
+import com.tlz.ada.AdaConstUtils.FILE_NAME
+import com.tlz.ada.AdaConstUtils.FOLDER_NAME
+import com.tlz.ada.AdaConstUtils.PATH
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
 
@@ -15,7 +15,7 @@ import java.io.File
  * Data: 2018/9/5.
  * Time: 17:54.
  */
-class FileRequestHandler(private val webServer: AndDevelopAssistantWebServer) : RequestHandler {
+class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 
 	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
 			when (session.uri) {

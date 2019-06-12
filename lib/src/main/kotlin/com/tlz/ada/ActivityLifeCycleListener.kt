@@ -11,7 +11,7 @@ import android.os.Bundle
  * Data: 2019/3/18.
  * Time: 16:36.
  */
-class ActivityLifeCycleHooker(private val ctx: Context) {
+class ActivityLifeCycleListener(private val ctx: Context) {
 
     /** 当前Activity实例. */
     var currentActivityInstance: Activity? = null
@@ -51,7 +51,8 @@ class ActivityLifeCycleHooker(private val ctx: Context) {
     }
 
     fun install() {
-        (ctx as Application).registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
+        (ctx as Application).unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
+        ctx.registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
     }
 
 }

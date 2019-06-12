@@ -10,11 +10,11 @@ import fi.iki.elonen.NanoWSD
  * Data: 2018/9/7.
  * Time: 11:25.
  */
-class AndDevelopAssistantWSD : NanoWSD() {
+class AdaWSD : NanoWSD() {
 
-	private val active = mutableListOf<AndDevelopAssistantWebSocket>()
-	private val toAdd = mutableListOf<AndDevelopAssistantWebSocket>()
-	private val toRemove = mutableListOf<AndDevelopAssistantWebSocket>()
+	private val active = mutableListOf<AdaWebSocket>()
+	private val toAdd = mutableListOf<AdaWebSocket>()
+	private val toRemove = mutableListOf<AdaWebSocket>()
 
 	private var wsPinger: Thread? = null
 
@@ -52,9 +52,11 @@ class AndDevelopAssistantWSD : NanoWSD() {
 					}
 				}
 			}
+		}.apply {
+			name = "AdaWebSocketPinger"
+			isDaemon = true
+			start()
 		}
-		wsPinger?.isDaemon = true
-		wsPinger?.start()
 	}
 
 	/**
@@ -66,7 +68,7 @@ class AndDevelopAssistantWSD : NanoWSD() {
 			if (session.uri == "/api/log") serve(session) else null
 
 	override fun openWebSocket(handshake: NanoHTTPD.IHTTPSession): WebSocket {
-		val socket = AndDevelopAssistantWebSocket(handshake)
+		val socket = AdaWebSocket(handshake)
 		synchronized(toAdd) {
 			if (!toAdd.contains(socket))
 				toAdd.add(socket)
@@ -78,7 +80,7 @@ class AndDevelopAssistantWSD : NanoWSD() {
 	 * 关闭socket.
 	 * @param webSocket DebuggerWebSocket
 	 */
-	fun closeSocket(socket: AndDevelopAssistantWebSocket) {
+	fun closeSocket(socket: AdaWebSocket) {
 		synchronized(toRemove) {
 			if (!toRemove.contains(socket))
 				toRemove.add(socket)
@@ -101,7 +103,6 @@ class AndDevelopAssistantWSD : NanoWSD() {
 
 	companion object {
 		private val pingPayload = "1337DEADBEEFC001".toByteArray()
-		private const val TAG = "DebuggerWSD"
 	}
 
 }

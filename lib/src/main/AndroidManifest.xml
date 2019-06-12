@@ -9,7 +9,7 @@
 
     <application>
         <provider
-            android:name=".AndDevelopAssistantInitProvider"
+            android:name=".AdaInitProvider"
             android:authorities="${applicationId}.AndDevelopAssistantProvider"
             android:enabled="true"
             android:exported="false" />

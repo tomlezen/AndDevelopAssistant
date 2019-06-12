@@ -1,5 +1,6 @@
 package com.tlz.ada
 
+import android.annotation.SuppressLint
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.database.Cursor
@@ -10,14 +11,16 @@ import android.net.Uri
  * Data: 2018/1/27.
  * Time: 14:48.
  */
-class AndDevelopAssistantInitProvider : ContentProvider() {
+class AdaInitProvider : ContentProvider() {
 
   override fun insert(uri: Uri?, values: ContentValues?): Uri? = null
 
   override fun query(uri: Uri?, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor? = null
 
   override fun onCreate(): Boolean {
-    AndDevelopAssistantWebServer.start(context ?: return true)
+    context?.let {
+      adaWebServer = AdaWebServer(it, it.adaServerPort())
+    }
     return true
   }
 
@@ -27,5 +30,9 @@ class AndDevelopAssistantInitProvider : ContentProvider() {
 
   override fun getType(uri: Uri?): String = ""
 
-
+  companion object {
+    @SuppressLint("StaticFieldLeak")
+    internal lateinit var adaWebServer: AdaWebServer
+      private set
+  }
 }

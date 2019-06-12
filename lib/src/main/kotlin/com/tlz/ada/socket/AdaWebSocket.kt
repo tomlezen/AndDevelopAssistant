@@ -11,7 +11,7 @@ import java.io.IOException
  * Data: 2018/9/7.
  * Time: 11:27.
  */
-class AndDevelopAssistantWebSocket(handsShakeRequest: NanoHTTPD.IHTTPSession) : NanoWSD.WebSocket(handsShakeRequest) {
+class AdaWebSocket(handsShakeRequest: NanoHTTPD.IHTTPSession) : NanoWSD.WebSocket(handsShakeRequest) {
 
 	/** ping次数. */
 	private var pingCount = 0
@@ -28,38 +28,33 @@ class AndDevelopAssistantWebSocket(handsShakeRequest: NanoHTTPD.IHTTPSession) : 
 	}
 
 	override fun onOpen() {
-//		Log.d(TAG, "web socket open")
 		send(gson.toJson(connectSuccessLog))
 	}
 
 	override fun onClose(code: NanoWSD.WebSocketFrame.CloseCode?, reason: String?, initiatedByRemote: Boolean) {
-//		Log.d(TAG, "web socket close, reason: $reason")
 	}
 
 	override fun onMessage(message: NanoWSD.WebSocketFrame?) {
-//		Log.d(TAG, "web socket message: $message")
 	}
 
 	override fun onPong(pong: NanoWSD.WebSocketFrame?) {
-//		Log.d(TAG, "web socket pong")
 		pongCount++
 	}
 
 	override fun onException(exception: IOException?) {
-		Log.e(TAG, "web socket exception", exception)
+//		Log.e(TAG, "web socket exception", exception)
 	}
 
 	override fun ping(payload: ByteArray?) {
 		super.ping(payload)
-//		Log.d(TAG, "web socket ping")
 		pingCount++
-		if (pingCount - pingCount > 3) {
+		if (pingCount - pongCount > 3) {
 			close(NanoWSD.WebSocketFrame.CloseCode.GoingAway, "Missed too many ping requests.", false)
 		}
 	}
 
 	companion object {
-		private const val TAG = "DebuggerWebSocket"
+//		private const val TAG = "DebuggerWebSocket"
 	}
 
 }

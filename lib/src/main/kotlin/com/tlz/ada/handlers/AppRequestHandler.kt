@@ -4,11 +4,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import com.tlz.ada.*
-import com.tlz.ada.ConstUtils.FILTER
-import com.tlz.ada.ConstUtils.PAGE_INDEX
-import com.tlz.ada.ConstUtils.PAGE_SIZE
-import com.tlz.ada.ConstUtils.PKG
-import com.tlz.ada.ConstUtils.SEARCH
+import com.tlz.ada.AdaConstUtils.FILTER
+import com.tlz.ada.AdaConstUtils.PAGE_INDEX
+import com.tlz.ada.AdaConstUtils.PAGE_SIZE
+import com.tlz.ada.AdaConstUtils.PKG
+import com.tlz.ada.AdaConstUtils.SEARCH
 import com.tlz.ada.models.Response
 import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayInputStream
@@ -95,7 +95,7 @@ class AppRequestHandler(
 	 */
 	private fun handleAppInfoRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
 			handleRequestSafely {
-				responseData(com.tlz.ada.models.Response(data = appManager.getApplicationInfoByPkg(session.parms[PKG]
+				responseData(Response(data = appManager.getApplicationInfoByPkg(session.parms[PKG]
 						?: "")))
 			}
 

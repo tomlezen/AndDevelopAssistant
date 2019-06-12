@@ -7,7 +7,7 @@ import android.util.Log.ERROR
 import android.util.Log.INFO
 import android.util.Log.VERBOSE
 import android.util.Log.WARN
-import com.tlz.ada.ConstUtils
+import com.tlz.ada.AdaConstUtils
 import com.tlz.ada.LogcatReader
 import com.tlz.ada.gson
 import com.tlz.ada.handleRequestSafely
@@ -15,7 +15,7 @@ import com.tlz.ada.models.FileInfo
 import com.tlz.ada.models.Log
 import com.tlz.ada.responseData
 import com.tlz.ada.responseError
-import com.tlz.ada.socket.AndDevelopAssistantWSD
+import com.tlz.ada.socket.AdaWSD
 import com.tlz.ada.toResponse
 import com.tlz.ada.verifyParams
 import fi.iki.elonen.NanoHTTPD
@@ -32,7 +32,7 @@ import java.util.*
  */
 class LogRequestHandler(
 		private val ctx: Context,
-		private val wsd: AndDevelopAssistantWSD
+		private val wsd: AdaWSD
 ) : RequestHandler {
 
 	/** 日志文件，根据具体时间来生成. */
@@ -43,7 +43,7 @@ class LogRequestHandler(
 
 	/** 日志缓存文件夹. */
 	private val logCacheFolder by lazy {
-		ctx.externalCacheDir.absolutePath + "/log/"
+		ctx.externalCacheDir?.absolutePath + "/log/"
 	}
 
 	/** 每次初始化都新建一个日志文件. */
@@ -95,8 +95,8 @@ class LogRequestHandler(
 	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
 			when (session.uri) {
 				"/api/log/list" -> handleLogListRequest()
-				"/api/log/delete" -> session.verifyParams(::handleLogDeleteRequest, ConstUtils.FILES)
-				"/api/log/download" -> session.verifyParams(::handleLogDownloadRequest, ConstUtils.FILE_NAME)
+				"/api/log/delete" -> session.verifyParams(::handleLogDeleteRequest, AdaConstUtils.FILES)
+				"/api/log/download" -> session.verifyParams(::handleLogDownloadRequest, AdaConstUtils.FILE_NAME)
 				else -> wsd.onRequest(session)
 			}
 

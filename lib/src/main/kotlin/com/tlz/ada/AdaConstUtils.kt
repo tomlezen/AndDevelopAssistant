@@ -5,7 +5,7 @@ package com.tlz.ada
  * Data: 2018/1/27.
  * Time: 16:17.
  */
-object ConstUtils {
+object AdaConstUtils {
 
 	const val PREFS = "SharePreferences"
 
