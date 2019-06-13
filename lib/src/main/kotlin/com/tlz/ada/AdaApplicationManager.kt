@@ -12,11 +12,12 @@ import java.io.File
 
 
 /**
+ * 应用管理器.
  * Created by Tomlezen.
  * Data: 2018/9/4.
  * Time: 13:31.
  */
-interface ApplicationManager {
+interface AdaApplicationManager {
 
   /** 应用列表. */
   val applicationList: List<Application>
@@ -34,13 +35,11 @@ interface ApplicationManager {
   fun getApplicationInfoByPkg(pkg: String): ApplicationInfo?
 
   companion object {
-    operator fun invoke(ctx: Context): ApplicationManager =
-        ApplicationManagerImpl(ctx)
+    operator fun invoke(ctx: Context): AdaApplicationManager = AdaApplicationManagerImpl(ctx)
   }
-
 }
 
-private class ApplicationManagerImpl(ctx: Context) : ApplicationManager {
+private class AdaApplicationManagerImpl(ctx: Context) : AdaApplicationManager {
 
   private val pkgManager = ctx.packageManager
 
@@ -145,7 +144,7 @@ private class ApplicationManagerImpl(ctx: Context) : ApplicationManager {
               actInfo.permission,
               actInfo.exported
           )
-        } ?: listOf(),
+        } ?: emptyList(),
         it.services?.mapTo(mutableListOf()) { srvInfo ->
           ServiceInfo(
               srvInfo.name,
@@ -153,7 +152,7 @@ private class ApplicationManagerImpl(ctx: Context) : ApplicationManager {
               srvInfo.flags,
               srvInfo.exported
           )
-        } ?: listOf(),
+        } ?: emptyList(),
         it.receivers?.mapTo(mutableListOf()) { actInfo ->
           ActivityInfo(
               actInfo.name,
@@ -169,7 +168,7 @@ private class ApplicationManagerImpl(ctx: Context) : ApplicationManager {
               actInfo.permission,
               actInfo.exported
           )
-        } ?: listOf(),
+        } ?: emptyList(),
         it.providers?.mapTo(mutableListOf()) { providerInfo ->
           ProviderInfo(
               providerInfo.name,
@@ -179,22 +178,19 @@ private class ApplicationManagerImpl(ctx: Context) : ApplicationManager {
               providerInfo.grantUriPermissions,
               providerInfo.multiprocess
           )
-        } ?: listOf(),
+        } ?: emptyList(),
         it.applicationInfo
     )
   }
 
   override fun getApplicationInfoByPkg(pkg: String): ApplicationInfo? =
-      _applicationInfoList.find { it.pkg == pkg }?.apply {
-        if (path.isEmpty()) {
-          path = readApkPath(pkg)
-          size = File(path).run {
-            if (exists()) {
-              length()
-            } else {
-              0L
+      _applicationInfoList.find { it.pkg == pkg }
+          ?.apply {
+            if (path.isEmpty()) {
+              path = readApkPath(pkg)
+              size = File(path).run {
+                if (exists()) length() else 0L
+              }
             }
           }
-        }
-      }
 }

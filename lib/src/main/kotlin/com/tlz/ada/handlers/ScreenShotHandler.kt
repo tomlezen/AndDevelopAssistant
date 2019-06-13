@@ -1,7 +1,7 @@
 package com.tlz.ada.handlers
 
 import android.graphics.Bitmap
-import com.tlz.ada.ActivityLifeCycleListener
+import com.tlz.ada.AdaActivityLifeCycleListener
 import com.tlz.ada.handleRequestSafely
 import com.tlz.ada.responseError
 import com.tlz.ada.verifyParams
@@ -16,7 +16,7 @@ import java.io.InputStream
  * Data: 2019/3/18.
  * Time: 16:26.
  */
-class ScreenShotHandler(private val activityLifeCycleHooker: ActivityLifeCycleListener) : RequestHandler {
+class ScreenShotHandler(private val activityLifeCycleHooker: AdaActivityLifeCycleListener) : RequestHandler {
 
   override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
       when (session.uri) {

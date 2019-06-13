@@ -6,12 +6,12 @@ import android.content.Context
 import android.os.Bundle
 
 /**
- * Activity生命周期钩子.
+ * Activity生命周期监听.
  * Created by tomlezen.
  * Data: 2019/3/18.
  * Time: 16:36.
  */
-class ActivityLifeCycleListener(private val ctx: Context) {
+class AdaActivityLifeCycleListener(private val ctx: Context) {
 
     /** 当前Activity实例. */
     var currentActivityInstance: Activity? = null

@@ -13,6 +13,7 @@ import java.io.File
 
 
 /**
+ * 服务器.
  * Created by tomlezen.
  * Data: 2018/1/27.
  * Time: 15:00.
@@ -20,8 +21,8 @@ import java.io.File
 class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : NanoHTTPD(port) {
 
   private val dataProvider: AdaDataProvider by lazy { AdaDataProviderImpl(ctx) }
-  private val appManager by lazy { ApplicationManager(ctx) }
-  private val activityLifeCycleHooker by lazy { ActivityLifeCycleListener(ctx) }
+  private val appManager by lazy { AdaApplicationManager(ctx) }
+  private val activityLifeCycleHooker by lazy { AdaActivityLifeCycleListener(ctx) }
 
   /** 所有请求处理器. */
   private val handlers = mutableListOf<RequestHandler>()
@@ -43,7 +44,7 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
     activityLifeCycleHooker.install()
     tempFileManagerFactory = AdaTempFileManagerFactory(ctx)
     serverAddress = "${AdaProvider.getPhoneIp()}:$port"
-    Ada.adaExcutorService.submit {
+    Ada.submitTask {
       runCatching {
         // 为了加快应用列表api的访问速度，先加载所有的应用再启动服务器
         appManager.readApplicationList()

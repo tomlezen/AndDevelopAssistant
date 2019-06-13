@@ -17,7 +17,7 @@ import fi.iki.elonen.NanoHTTPD
 class InitRequestHandler(
     private val ctx: Context,
     private val dataProvider: AdaDataProvider,
-    private val appManager: ApplicationManager
+    private val appManager: AdaApplicationManager
 ) : RequestHandler {
 
   override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
@@ -32,10 +32,10 @@ class InitRequestHandler(
    */
   private fun handleInitRequest(): NanoHTTPD.Response {
     val dbs = mutableListOf<Db>()
-    dataProvider.getDatabaseList().forEach {
-      executeSafely {
+    dataProvider.getAllDatabase().forEach {
+      runCatching {
         val tabWrapper = dataProvider.getAllTable(it)
-        dbs.add(Db(it, tabWrapper.version, tabWrapper.tables))
+        dbs.add(Db(it, tabWrapper.version, tabWrapper.tableInfos))
       }
     }
     return appManager.getApplicationInfoByPkg(ctx.packageName)?.run {
@@ -48,7 +48,7 @@ class InitRequestHandler(
               verCode,
               isSystemApp,
               size,
-              "${AdaInitProvider.adaWebServer.serverAddress}/api/log",
+              "${Ada.adaWebServer.serverAddress}/api/log",
               dbs
           ).toResponse())
     } ?: responseError(errorMsg = "未获取到应用信息")

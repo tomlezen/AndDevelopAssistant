@@ -2,11 +2,12 @@ package com.tlz.ada.db
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.tlz.ada.Ada
 import com.tlz.ada.AdaConstUtils
-import com.tlz.ada.gson
+import com.tlz.ada.exceptions.AdaException
 import com.tlz.ada.models.KeyValue
-import com.tlz.ada.models.TableInfo
 import com.tlz.ada.models.Table
+import com.tlz.ada.models.TableInfo
 import java.io.File
 
 /**
@@ -39,8 +40,8 @@ internal class SpDataProviderImpl(private val ctx: Context) : AdaDataProvider {
     return Table(0, tables)
   }
 
-  override fun getTableInfo(dName: String, tName: String): TableInfo? =
-      spTables.find { it.name == dName }
+  override fun getTableInfo(dName: String, tName: String): TableInfo =
+      spTables.find { it.name == dName } ?: throw AdaException("不存在该表信息: dName=$dName;tName=$tName")
 
   override fun getTableDataCount(dName: String, tName: String, where: String): Int = -1
 
@@ -94,7 +95,7 @@ internal class SpDataProviderImpl(private val ctx: Context) : AdaDataProvider {
         AdaConstUtils.TYPE_STRING_SET ->
           putStringSet(
               keyValue.key,
-              gson.fromJson<Array<String>>(keyValue.value, Array<String>::class.java).mapTo(mutableSetOf()) { it }
+              Ada.adaGson.fromJson<Array<String>>(keyValue.value, Array<String>::class.java).mapTo(mutableSetOf()) { it }
           )
         else -> putString(keyValue.key, keyValue.value)
       }

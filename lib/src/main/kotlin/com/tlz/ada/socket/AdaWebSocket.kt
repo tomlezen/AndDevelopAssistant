@@ -1,7 +1,7 @@
 package com.tlz.ada.socket
 
 import android.util.Log
-import com.tlz.ada.gson
+import com.tlz.ada.Ada
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoWSD
 import java.io.IOException
@@ -28,7 +28,7 @@ class AdaWebSocket(handsShakeRequest: NanoHTTPD.IHTTPSession) : NanoWSD.WebSocke
 	}
 
 	override fun onOpen() {
-		send(gson.toJson(connectSuccessLog))
+		send(Ada.adaGson.toJson(connectSuccessLog))
 	}
 
 	override fun onClose(code: NanoWSD.WebSocketFrame.CloseCode?, reason: String?, initiatedByRemote: Boolean) {

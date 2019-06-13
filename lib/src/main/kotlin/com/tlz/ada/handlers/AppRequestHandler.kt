@@ -25,7 +25,7 @@ import kotlin.math.min
  */
 class AppRequestHandler(
 		private val ctx: Context,
-		private val appManager: ApplicationManager
+		private val appManager: AdaApplicationManager
 ) : RequestHandler {
 	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
 			when (session.uri) {
@@ -106,7 +106,7 @@ class AppRequestHandler(
 	 */
 	private fun handleAppInstallRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
 			handleRequestSafely {
-				val apkFilePath = ctx.externalCacheDir.absolutePath + "/install_apk.apk"
+				val apkFilePath = ctx.externalCacheDir?.absolutePath + "/install_apk.apk"
 				val apkFile = File(apkFilePath)
 				if (apkFile.exists()) {
 					apkFile.delete()
