@@ -1,6 +1,6 @@
 package com.tlz.ada.models
 
-import android.support.annotation.Keep
+import androidx.annotation.Keep
 
 /**
  * @property dbs List<Db> 数据库列表.

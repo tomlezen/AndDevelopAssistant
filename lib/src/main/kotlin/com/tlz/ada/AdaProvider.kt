@@ -1,12 +1,13 @@
 package com.tlz.ada
 
-import android.support.annotation.Keep
 import android.util.Pair
+import androidx.annotation.Keep
 import java.io.File
 import java.net.Inet4Address
 import java.net.NetworkInterface
 
 /**
+ * 提供给外部访问.
  * Created by tomlezen.
  * Data: 2018/2/24.
  * Time: 13:59.
@@ -21,7 +22,7 @@ object AdaProvider {
   @Keep
   @JvmStatic
   fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
-    AdaInitProvider.adaWebServer.setCustomDatabaseFiles(files)
+    Ada.adaWebServer.setCustomDatabaseFiles(files)
   }
 
   /**
@@ -52,6 +53,5 @@ object AdaProvider {
    */
   @Keep
   @JvmStatic
-  fun getAdaServerAddress(): String = AdaInitProvider.adaWebServer.serverAddress
-
+  fun getAdaServerAddress(): String = Ada.adaWebServer.serverAddress
 }

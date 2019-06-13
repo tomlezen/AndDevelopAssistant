@@ -2,12 +2,11 @@ package com.tlz.ada.db
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Pair
 import com.tlz.ada.AdaConstUtils
 import com.tlz.ada.gson
 import com.tlz.ada.models.KeyValue
 import com.tlz.ada.models.TableInfo
-import com.tlz.ada.models.TableWrapper
+import com.tlz.ada.models.Table
 import java.io.File
 
 /**
@@ -26,7 +25,7 @@ internal class SpDataProviderImpl(private val ctx: Context) : AdaDataProvider {
 
   override fun getDatabaseFile(dName: String): File? = null
 
-  override fun getAllTable(dName: String): TableWrapper {
+  override fun getAllTable(dName: String): Table {
     val tables = mutableListOf<TableInfo>()
     val spDir = File(ctx.applicationInfo.dataDir + "/shared_prefs")
     if (spDir.exists()) {
@@ -37,7 +36,7 @@ internal class SpDataProviderImpl(private val ctx: Context) : AdaDataProvider {
           .mapTo(tables) { TableInfo(it, listOf()) }
     }
     spTables = tables
-    return TableWrapper(0, tables)
+    return Table(0, tables)
   }
 
   override fun getTableInfo(dName: String, tName: String): TableInfo? =

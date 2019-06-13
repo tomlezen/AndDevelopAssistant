@@ -6,20 +6,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.support.v4.content.ContextCompat
-import android.support.v4.content.FileProvider
-import android.util.Log
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.tlz.ada.models.FileInfo
 import com.tlz.ada.models.Response
 import fi.iki.elonen.NanoHTTPD
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-
-
-val gson: Gson by lazy { GsonBuilder().create() }
 
 fun rMin(v1: Int, v2: Int): Int {
   return if (v2 == -1 || v2 > v1) v1 else v2
@@ -49,19 +43,6 @@ internal fun Context.metaDataInt(key: String, default: Int = 0): Int =
 internal fun String.readHtml(ctx: Context): String = ctx.assets.open("web$this").bufferedReader().readText()
 
 /**
- * 执行代码并捕捉异常
- */
-internal fun executeSafely(action: () -> Unit): Boolean {
-  return try {
-    action.invoke()
-    true
-  } catch (t: Throwable) {
-//        Log.e(AdaWebServer.TAG, "", t)
-    false
-  }
-}
-
-/**
  * 执行cmd命令.
  * @param cmd String
  * @return List<String>
@@ -73,7 +54,7 @@ internal fun cmd(cmd: String): List<String> {
   val lines = mutableListOf<String>()
   var line: String? = read.readLine()
   while (line != null) {
-    lines.add(line)
+    lines += line
     line = read.readLine()
   }
   read.close()
@@ -151,7 +132,7 @@ fun response(type: String, html: String): NanoHTTPD.Response =
     NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, type, html)
 
 fun responseData(data: Any): NanoHTTPD.Response =
-    NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, gson.toJson(data))
+    NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, Ada.adaGson.toJson(data))
 
 fun responseHtml(html: String): NanoHTTPD.Response =
     NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_HTML, html)
@@ -172,8 +153,7 @@ internal fun handleRequestSafely(errorMsg: String? = null, action: () -> NanoHTT
     try {
       action.invoke()
     } catch (t: Throwable) {
-//      Log.e(AdaWebServer.TAG, "", t)
-      responseError(errorMsg = errorMsg ?: "数据处理出错${t.message}")
+      responseError(errorMsg = errorMsg ?: "${t.message}")
     }
 
 /**

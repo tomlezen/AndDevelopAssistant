@@ -23,8 +23,7 @@ import fi.iki.elonen.NanoHTTPD
 class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandler {
 
 	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? {
-		val uri = session.uri
-		return when (uri) {
+		return when (session.uri) {
 			"/api/db/select" -> if (session.parms[DB_NAME] == "SharePreferences") {
 				session.verifyParams(::handleSqSelectRequest, SQL, DB_NAME, TABLE_NAME)
 			} else {
@@ -49,10 +48,10 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				val dName = session.parms[DB_NAME] ?: ""
 				val tName = session.parms[TABLE_NAME] ?: ""
 				val tabInfo = dataProvider.getTableInfo(dName, tName)
-				val orderColumn = tabInfo?.fieldInfos?.find { session.parms.containsKey(it.name) }?.name
+				val orderColumn = tabInfo.fieldInfos.find { session.parms.containsKey(it.name) }?.name
 						?: ""
 				val orderDir = session.parms[orderColumn] ?: ""
-				val data = dataProvider.executeQuery(dName, tName, orderDir)
+				val data = dataProvider.query(dName, tName, orderDir)
 				return@handleRequestSafely responseData(DataResponse(data.size, data.size, data))
 			}
 
@@ -76,13 +75,13 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				val orderDir = params[orderColumn] ?: ""
 				var recordsTotal = 0
 				var recordsFiltered = 0
-				dataProvider.getTableInfo(dName, tName)?.let {
+				dataProvider.getTableInfo(dName, tName).let {
 					var limitStart = 0
 					var limitLength = -1
 					var tSearchSql = originalSql
 					//分割limit限制
 					if (tSearchSql.contains("limit")) {
-						executeSafely {
+						runCatching{
 							val index = tSearchSql.indexOf("limit")
 							val limitStr = tSearchSql.substring(index + 5, tSearchSql.length)
 							val limitParams = limitStr.split(",")
@@ -147,10 +146,9 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 					if (length >= 0 || length == -1) {
 						sql += " limit $start, $length"
 					}
-					val data = dataProvider.executeQuery(dName, tName, sql)
+					val data = dataProvider.query(dName, tName, sql)
 					responseData(DataResponse(if (recordsFiltered != 0) recordsFiltered else recordsTotal, recordsFiltered, data))
 				}
-						?: responseData(DataResponse(recordsTotal, recordsFiltered, mutableListOf(), "没有找到${dName}数据库下的${tName}表"))
 			}
 
 	/**
@@ -164,7 +162,7 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				val tName = session.parms["tName"] ?: ""
 				val where = session.parms["where"] ?: ""
 				if (where.isNotBlank()) {
-					if (dataProvider.deleteRow(dName, tName, where)) {
+					if (dataProvider.delete(dName, tName, where)) {
 						responseData(com.tlz.ada.models.Response(data = "success"))
 					} else {
 						responseError(errorMsg = "没有匹配的数据")
@@ -185,8 +183,8 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				val tName = session.parms["tName"] ?: ""
 				val data = session.parms["data"] ?: ""
 				if (data.isNotBlank()) {
-					(gson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
-						if (dataProvider.addRow(dName, tName, it)) {
+					(Ada.adaGson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
+						if (dataProvider.add(dName, tName, it)) {
 							responseData(com.tlz.ada.models.Response(data = "success"))
 						} else {
 							responseError(errorMsg = "添加数据失败数据")
@@ -209,8 +207,8 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				val where = session.parms["where"] ?: ""
 				val data = session.parms["data"] ?: ""
 				if (where.isNotBlank() && data.isNotBlank()) {
-					(gson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
-						if (dataProvider.updateRow(dName, tName, it, where)) {
+					(Ada.adaGson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
+						if (dataProvider.update(dName, tName, it, where)) {
 							responseData(com.tlz.ada.models.Response(data = "success"))
 						} else {
 							responseError(errorMsg = "没有找到匹配的数据")
@@ -231,7 +229,7 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				val dName = session.parms.getValue("dName")
 				val sql = session.parms.getValue("sql")
 				if (sql.isNotBlank()) {
-					val result = dataProvider.executeSql(dName, sql)
+					val result = dataProvider.rawQuery(dName, sql)
 					if (result !is Boolean || result) {
 						responseData(com.tlz.ada.models.Response(data = if (result is Boolean) "success" else result))
 					} else {

@@ -12,7 +12,7 @@ import java.io.File
 class AdaTempFileManagerFactory(private val ctx: Context) : NanoHTTPD.TempFileManagerFactory {
 
 	override fun create(): NanoHTTPD.TempFileManager =
-			AndTempFileManager(ctx.externalCacheDir.absolutePath + "/AndDevelopAssistant")
+			AndTempFileManager(ctx.externalCacheDir?.absolutePath + "/AndDevelopAssistant")
 
 	class AndTempFileManager(tmpdir: String) : NanoHTTPD.TempFileManager {
 
@@ -24,13 +24,13 @@ class AdaTempFileManagerFactory(private val ctx: Context) : NanoHTTPD.TempFileMa
 				tempDirFile.mkdirs()
 			} else {
 				// 清空之前未删除掉的文件
-				executeSafely { tempDirFile.listFiles().forEach { it.delete() } }
+				runCatching { tempDirFile.listFiles().forEach { it.delete() } }
 			}
 		}
 
 		override fun clear() {
 			this.tempFiles.forEach {
-				executeSafely { it.delete() }
+				runCatching { it.delete() }
 			}
 			this.tempFiles.clear()
 		}

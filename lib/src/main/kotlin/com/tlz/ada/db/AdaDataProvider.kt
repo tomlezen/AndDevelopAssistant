@@ -2,9 +2,8 @@ package com.tlz.ada.db
 
 import com.tlz.ada.models.KeyValue
 import com.tlz.ada.models.TableInfo
-import com.tlz.ada.models.TableWrapper
+import com.tlz.ada.models.Table
 import java.io.File
-import android.util.Pair
 
 /**
  * Created by tomlezen.
@@ -18,9 +17,9 @@ interface AdaDataProvider {
 
   fun getDatabaseFile(dName: String): File?
 
-  fun getAllTable(dName: String): TableWrapper
+  fun getAllTable(dName: String): Table
 
-  fun getTableInfo(dName: String, tName: String): TableInfo?
+  fun getTableInfo(dName: String, tName: String): TableInfo
 
   fun getTableDataCount(dName: String, tName: String, where: String): Int
 

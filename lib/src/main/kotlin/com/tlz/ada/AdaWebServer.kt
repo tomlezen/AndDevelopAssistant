@@ -17,11 +17,10 @@ import java.io.File
  * Data: 2018/1/27.
  * Time: 15:00.
  */
-class AdaWebServer internal constructor(internal val ctx: Context, private val port: Int) : NanoHTTPD(port) {
+class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : NanoHTTPD(port) {
 
-  private val dataProvider: AdaDataProvider by lazy { AdaDataProviderImpl(ctx, gson) }
+  private val dataProvider: AdaDataProvider by lazy { AdaDataProviderImpl(ctx) }
   private val appManager by lazy { ApplicationManager(ctx) }
-  private val wsd by lazy { AdaWSD() }
   private val activityLifeCycleHooker by lazy { ActivityLifeCycleListener(ctx) }
 
   /** 所有请求处理器. */
@@ -44,11 +43,12 @@ class AdaWebServer internal constructor(internal val ctx: Context, private val p
     activityLifeCycleHooker.install()
     tempFileManagerFactory = AdaTempFileManagerFactory(ctx)
     serverAddress = "${AdaProvider.getPhoneIp()}:$port"
-    Thread {
-      val isSuccessful = executeSafely {
+    Ada.adaExcutorService.submit {
+      runCatching {
         // 为了加快应用列表api的访问速度，先加载所有的应用再启动服务器
         appManager.readApplicationList()
         // 注册各种处理器
+        val wsd = AdaWSD()
         handlers.add(LogRequestHandler(ctx, wsd))
         handlers.add(InitRequestHandler(ctx, dataProvider, appManager))
         handlers.add(DbRequestHandler(dataProvider))
@@ -60,11 +60,10 @@ class AdaWebServer internal constructor(internal val ctx: Context, private val p
         start(10000)
         wsd.start(this)
         Log.e(TAG, "address: $serverAddress")
-      }
-      if (!isSuccessful) {
+      }.onFailure {
         Log.e(TAG, "Android调试辅助初始化失败")
       }
-    }.start()
+    }
   }
 
   /**
@@ -72,7 +71,12 @@ class AdaWebServer internal constructor(internal val ctx: Context, private val p
    * @param files Map<String, Pair<File, String>>
    */
   fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
-    dataProvider.setCustomDatabaseFiles(files)
+    if (files.isEmpty()) return
+    val newFiles = mutableMapOf<String, kotlin.Pair<File, String>>()
+    files.forEach {
+      newFiles[it.key] = it.value.first to it.value.second
+    }
+    dataProvider.setCustomDatabaseFiles(newFiles)
   }
 
   override fun serve(session: IHTTPSession?): Response {
