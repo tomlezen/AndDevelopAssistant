@@ -18,7 +18,7 @@ class AdaInitProvider : ContentProvider() {
 
   override fun onCreate(): Boolean {
     context?.let {
-      Ada.adaWebServer = AdaWebServer(it, it.adaServerPort())
+      Ada.init(it)
     }
     return true
   }

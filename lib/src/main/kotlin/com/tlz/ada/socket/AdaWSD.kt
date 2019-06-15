@@ -24,7 +24,7 @@ class AdaWSD : NanoWSD() {
     toAdd.clear()
     toRemove.clear()
     active.clear()
-    Ada.adaExcutorService.submit {
+    Ada.submitTask {
       var nextTime = System.currentTimeMillis()
       while (nanoHTTPD.isAlive) {
         nextTime += 4000L

@@ -1,6 +1,7 @@
 package com.tlz.ada
 
 import android.annotation.SuppressLint
+import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import java.util.concurrent.Executors
@@ -15,17 +16,21 @@ object Ada {
   /** Gson实例. */
   val adaGson: Gson by lazy { GsonBuilder().create() }
 
+  @SuppressLint("StaticFieldLeak")
+  lateinit var adaWebServer: AdaWebServer
+    internal set
+
   /** 线程池. */
-  private val adaExcutorService by lazy { Executors.newCachedThreadPool() }
+  private val adaExecutorService by lazy { Executors.newCachedThreadPool() }
 
   /**
    * 提交执行任务.
    * @param task () -> Unit
    * @return Future<*>
    */
-  fun submitTask(task: () -> Unit): Future<*> = adaExcutorService.submit(task)
+  fun submitTask(task: () -> Unit): Future<*> = adaExecutorService.submit(task)
 
-  @SuppressLint("StaticFieldLeak")
-  lateinit var adaWebServer: AdaWebServer
-    internal set
+  fun init(ctx: Context) {
+    adaWebServer = AdaWebServer(ctx, ctx.adaServerPort())
+  }
 }
