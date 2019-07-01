@@ -51,12 +51,12 @@ class MainActivity : AppCompatActivity() {
       try {
         //初始化自定义数据库文件
         val initializer = Class.forName("com.tlz.ada.AdaProvider")
-        val method = initializer.getMethod("customDatabaseFiles", Map::class.java)
+        val method = initializer.getMethod("setCustomDatabaseFiles", Map::class.java)
         val customDatabaseFiles = HashMap<String, Pair<File, String>>()
         customDatabaseFiles["Custom.db"] = Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), "")
         method.invoke(null, customDatabaseFiles)
         //获取服务端地址
-        val serverAddressMethod = initializer.getMethod("getServerAddress")
+        val serverAddressMethod = initializer.getMethod("getAdaServerAddress")
         findViewById<TextView>(R.id.tv_ip).text = "服务器地址：${serverAddressMethod.invoke(null)}"
       } catch (e: Exception) {
         e.printStackTrace()

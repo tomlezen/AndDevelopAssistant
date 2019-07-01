@@ -48,5 +48,4 @@ class ScreenShotHandler(private val activityLifeCycleHooker: AdaActivityLifeCycl
         compress(Bitmap.CompressFormat.JPEG, 100, it)
         ByteArrayInputStream(it.toByteArray())
       }
-
 }

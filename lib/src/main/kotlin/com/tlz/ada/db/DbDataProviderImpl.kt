@@ -41,21 +41,21 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
   override fun getDatabaseFile(dName: String): File? = databaseFiles[dName]?.first
 
   override fun getAllTable(dName: String): Table =
-      dName.open().let {
+      dName.open {
         val data = mutableListOf<TableInfo>()
-        it.rawQuery("SELECT name FROM sqlite_master WHERE type='table' OR type='view' ORDER BY name COLLATE NOCASE", null)
+        rawQuery("SELECT name FROM sqlite_master WHERE type='table' OR type='view' ORDER BY name COLLATE NOCASE", null)
             .use { cursor ->
               if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast) {
                   val tName = cursor.getString(0)
                   if (tName != "android_metadata") {
-                    data += TableInfo(tName, getTableFieldInfo(it, tName))
+                    data += TableInfo(tName, getTableFieldInfo(this, tName))
                   }
                   cursor.moveToNext()
                 }
               }
             }
-        Table(runCatching { it.version }.getOrNull() ?: 0, data)
+        Table(runCatching { version }.getOrNull() ?: 0, data)
       }.also {
         tables[dName] = it
       }
@@ -69,23 +69,23 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
   }
 
   override fun getTableDataCount(dName: String, tName: String, where: String): Int =
-      dName.open().let {
+      dName.open {
         var sql = "select count(*) from $tName"
         if (where.isNotBlank()) {
           sql += " where $where"
         }
-        it.rawQuery(sql, null)
+        rawQuery(sql, null)
             .use { cursor ->
               while (cursor.moveToNext()) {
-                return cursor.getInt(0)
+                return@open cursor.getInt(0)
               }
             }
         0
       }
 
   override fun query(dName: String, tName: String, sql: String): List<Any> =
-      dName.open().let {
-        it.rawQuery(sql, null)
+      dName.open {
+        rawQuery(sql, null)
             .use { cursor ->
               val data = mutableListOf<Any>()
               val columnCount = cursor.columnCount
@@ -107,20 +107,20 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
       }
 
   override fun rawQuery(dName: String, sql: String): Any =
-      dName.open().let {
+      dName.open {
         if (sql.toLowerCase().startsWith("select ")) {
-          it.rawQuery(sql, null)
+          rawQuery(sql, null)
               .use { cursor ->
                 cursor.moveToNext()
                 cursor.getInt(0)
               }
         } else {
-          it.execSQL(sql)
+          execSQL(sql)
         }
       }
 
   override fun add(dName: String, tName: String, content: Array<KeyValue>): Boolean =
-      dName.open().let {
+      dName.open {
         val contentValues = ContentValues()
         content.forEach { kv ->
           when (kv.type) {
@@ -129,14 +129,16 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
             else -> contentValues.put(kv.key, kv.value)
           }
         }
-        it.insertOrThrow(tName, null, contentValues) >= 0
+        insertOrThrow(tName, null, contentValues) >= 0
       }
 
   override fun delete(dName: String, tName: String, where: String): Boolean =
-      dName.open().delete(tName, where, null) > 0
+      dName.open {
+        delete(tName, where, null) > 0
+      }
 
   override fun update(dName: String, tName: String, content: Array<KeyValue>, where: String): Boolean =
-      dName.open().let {
+      dName.open {
         val contentValues = ContentValues()
         content.forEach { kv ->
           when (kv.type) {
@@ -145,7 +147,7 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
             else -> contentValues.put(kv.key, kv.value)
           }
         }
-        it.update(tName, contentValues, where, null) == 1
+        update(tName, contentValues, where, null) == 1
       }
 
   /**
@@ -214,10 +216,17 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
    * 打开数据库.
    * @receiver String
    */
-  private fun String.open(): SQLiteDatabase {
+  private fun <T> String.open(block: SQLiteDatabase.() -> T): T {
     SQLiteDatabase.loadLibs(ctx)
     return databaseFiles[this]?.let {
-      SQLiteDatabase.openOrCreateDatabase(it.first, if (it.second.isEmpty()) null else it.second, null)
+      val db = SQLiteDatabase.openOrCreateDatabase(it.first, if (it.second.isEmpty()) null else it.second, null)
+      try {
+        db.beginTransaction()
+        block.invoke(db)
+      } finally {
+        db.endTransaction()
+        db.close()
+      }
     } ?: throw AdaException("不存在该数据库：$this")
   }
 
