@@ -41,7 +41,7 @@ internal class SpDataProviderImpl(private val ctx: Context) : AdaDataProvider {
   }
 
   override fun getTableInfo(dName: String, tName: String): TableInfo =
-      spTables.find { it.name == dName } ?: throw AdaException("不存在该表信息: dName=$dName;tName=$tName")
+      spTables.find { it.name == tName } ?: throw AdaException("不存在该表信息: dName=$dName;tName=$tName")
 
   override fun getTableDataCount(dName: String, tName: String, where: String): Int = -1
 
@@ -85,7 +85,7 @@ internal class SpDataProviderImpl(private val ctx: Context) : AdaDataProvider {
   }
 
   override fun update(dName: String, tName: String, content: Array<KeyValue>, where: String): Boolean {
-    dName.edit {
+    tName.edit {
       val keyValue = content.first()
       when (keyValue.type) {
         AdaConstUtils.TYPE_INTEGER -> putInt(keyValue.key, keyValue.value?.toInt() ?: 0)

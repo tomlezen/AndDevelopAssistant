@@ -222,7 +222,9 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
       val db = SQLiteDatabase.openOrCreateDatabase(it.first, if (it.second.isEmpty()) null else it.second, null)
       try {
         db.beginTransaction()
-        block.invoke(db)
+        block.invoke(db).apply {
+            db.setTransactionSuccessful()
+        }
       } finally {
         db.endTransaction()
         db.close()
