@@ -15,8 +15,8 @@ web端使用Angular6开发，因为个人设备和能力有限，没有在太多
 
 ```
 只需要在gradle文件中添加一下代码：
-Gradle3.0以上： debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.5'
-Gradle3.0以下： debugCompile 'com.tlz.tools:AndDevelopAssistant:0.0.5'
+Gradle3.0以上： debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.6'
+Gradle3.0以下： debugCompile 'com.tlz.tools:AndDevelopAssistant:0.0.6'
 ```
 
 启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AndDevelopAssistantWebServer的日志，其中会输入完整的访问地址。日志记录功能默认未开启
@@ -47,13 +47,13 @@ Gradle3.0以下： debugCompile 'com.tlz.tools:AndDevelopAssistant:0.0.5'
 //初始化自定义数据库文件
       if (BuildConfig.DEBUG) {
         try {
-          val initializer = Class.forName("com.tlz.ada.Initializer")
-          val method = initializer.getMethod("customDatabaseFiles", Map::class.java)
+          val initializer = Class.forName("com.tlz.ada.AdaProvider")
+          val method = initializer.getMethod("setCustomDatabaseFiles", Map::class.java)
           val customDatabaseFiles = HashMap<String, Pair<File, String>>()
           customDatabaseFiles.put("Custom.db", Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), ""))
           method.invoke(null, customDatabaseFiles)
           // 获取服务器地址
-          val serverAddressMethod = initializer.getMethod("getServerAddress")
+          val serverAddressMethod = initializer.getMethod("getAdaServerAddress")
           serverAddress = serverAddressMethod.invoke(null)
         } catch (e: Exception) {
           e.printStackTrace()
