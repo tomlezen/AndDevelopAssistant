@@ -1,6 +1,6 @@
-# Android开发辅助依赖库（之前不小心把bintray仓库删除了，现在gradle有所变化）
-- 数据库增删查改
-- SharePreferences修改、删除
+# Android开发辅助依赖库
+- 数据库增删查改，excel表导出，数据库文件导出
+- SharePreferences增删查改
 - 应用实时日志查看和历史日志查看，也支持历史日志下载与删除
 - 手机所有应用的信息查看，如：Activity、Service、权限等信息，也可以直接下载手机上的应用到电脑上
 - 通过web直接安装应用到手机上
@@ -8,6 +8,7 @@
 - 应用截图
 
 数据库相关处理思路参考[Android-Debug-Database](https://github.com/amitshekhariitbhu/Android-Debug-Database)
+（已知目前数据访问bug：当app应用的数据库对象不关闭时（Room），工具将查询不到数据）
 
 web端使用Angular6开发，因为个人设备和能力有限，没有在太多手机上测试，不能保证100%兼容每台手机
 
@@ -19,9 +20,9 @@ Gradle3.0以上： debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.6'
 Gradle3.0以下： debugCompile 'com.tlz.tools:AndDevelopAssistant:0.0.6'
 ```
 
-启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AndDevelopAssistantWebServer的日志，其中会输入完整的访问地址。日志记录功能默认未开启
+启动app，在浏览器中输入手机端ip地址+10000端口号进行访问（10000是默认端口号），如果不知道手机ip地址，可以在logcat窗口中查看名为AdaWebServer的日志，其中会输入完整的访问地址。日志记录功能默认开启
 
-## 如何设置web访问端口
+## 如何修改web访问端口
 
 需要在Manifest中加入meta-data数据：
 
