@@ -4,12 +4,11 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.support.v7.app.AppCompatActivity
 import android.util.Pair
 import android.widget.TextView
 import android.widget.Toast
 import com.tlz.andbase.persmission.RxPermissions
-import kotlinx.android.synthetic.main.activity_main.*
 import tomlezen.androiddebuglib.database.CustomDB
 import tomlezen.androiddebuglib.database.TestOneDb
 import tomlezen.androiddebuglib.database.TestThreeDb

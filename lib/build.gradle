@@ -37,12 +37,13 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.0.0'
+//    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
     api 'com.google.code.gson:gson:2.8.2'
     api 'net.zetetic:android-database-sqlcipher:3.5.7@aar'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
+//    androidTestImplementation 'androidx.test:runner:1.1.0'
+//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 }
 
 buildscript{

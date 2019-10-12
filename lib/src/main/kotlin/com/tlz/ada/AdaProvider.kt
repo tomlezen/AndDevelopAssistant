@@ -1,7 +1,7 @@
 package com.tlz.ada
 
 import android.util.Pair
-import androidx.annotation.Keep
+import android.support.annotation.Keep
 import java.io.File
 import java.net.Inet4Address
 import java.net.NetworkInterface

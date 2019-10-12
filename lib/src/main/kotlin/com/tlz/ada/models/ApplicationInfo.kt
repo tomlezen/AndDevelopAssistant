@@ -1,7 +1,7 @@
 package com.tlz.ada.models
 
 import android.content.pm.ApplicationInfo
-import androidx.annotation.Keep
+import android.support.annotation.Keep
 
 /**
  * Created by Tomlezen.
