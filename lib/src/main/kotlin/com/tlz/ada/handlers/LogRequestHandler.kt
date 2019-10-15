@@ -25,7 +25,7 @@ class LogRequestHandler(
 
   /** 日志文件，根据具体时间来生成. */
   private val logFileName by lazy {
-    val format = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.CHINA)
+    val format = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
     format.format(Date())
   }
 
@@ -50,32 +50,9 @@ class LogRequestHandler(
       cmd("logcat -v time") {
         // 写入到文件中
         logFile.appendText("\n" + it)
-        wsd.send(wrapLog(it.toLogObj()))
+        wsd.send(it)
       }
     }
-  }
-
-  private fun String.toLogObj() =
-      when {
-        contains("V/") -> Log("V", VERBOSE, this, this)
-        contains("D/") -> Log("D", DEBUG, this, this)
-        contains("I/") -> Log("I", INFO, this, this)
-        contains("W/") -> Log("W", WARN, this, this)
-        contains("E/") -> Log("E", ERROR, this, this)
-        else -> Log("A", ASSERT, this, this)
-      }
-
-  /**
-   * 包装下.
-   * @return String
-   */
-  private fun wrapLog(log: Log): Log {
-    when (log.type) {
-      "E" -> log.content = "<p style='color: #FF3030'>${log.content}</p>"
-      "W" -> log.content = "<p style='color: #FA8072'>${log.content}</p>"
-      else -> log.content = "<p>${log.content}</p>"
-    }
-    return log
   }
 
   override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =

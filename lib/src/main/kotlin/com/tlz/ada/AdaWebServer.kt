@@ -46,8 +46,6 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
     tempFileManagerFactory = AdaTempFileManagerFactory(ctx)
     Ada.submitTask {
       runCatching {
-        // 为了加快应用列表api的访问速度，先加载所有的应用再启动服务器
-        appManager.readApplicationList()
         // 注册各种处理器
         val wsd = AdaWSD()
         handlers.add(LogRequestHandler(ctx, wsd))
