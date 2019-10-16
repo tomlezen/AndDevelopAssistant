@@ -2,8 +2,10 @@ package com.tlz.ada.socket
 
 import android.util.Log
 import com.tlz.ada.Ada
-import fi.iki.elonen.NanoHTTPD
-import fi.iki.elonen.NanoWSD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.websockets.CloseCode
+import org.nanohttpd.protocols.websockets.WebSocket
+import org.nanohttpd.protocols.websockets.WebSocketFrame
 import java.io.IOException
 
 /**
@@ -11,33 +13,33 @@ import java.io.IOException
  * Data: 2018/9/7.
  * Time: 11:27.
  */
-class AdaWebSocket(handsShakeRequest: NanoHTTPD.IHTTPSession) : NanoWSD.WebSocket(handsShakeRequest) {
+class AdaWebSocket(handsShakeRequest: IHTTPSession) : WebSocket(handsShakeRequest) {
 
-	/** ping次数. */
-	private var pingCount = 0
-	/** 被ping次数. */
-	private var pongCount = 0
+  /** ping次数. */
+  private var pingCount = 0
+  /** 被ping次数. */
+  private var pongCount = 0
 
-	private val connectSuccessLog by lazy {
-		com.tlz.ada.models.Log(
-				"I",
-				Log.INFO,
-				"----------------------------------连接成功----------------------------------\n",
-				"----------------------------------连接成功----------------------------------\n"
-		)
-	}
+  private val connectSuccessLog by lazy {
+    com.tlz.ada.models.Log(
+        "I",
+        Log.INFO,
+        "----------------------------------连接成功----------------------------------\n",
+        "----------------------------------连接成功----------------------------------\n"
+    )
+  }
 
 	override fun onOpen() {
 		send(Ada.adaGson.toJson(connectSuccessLog))
 	}
 
-	override fun onClose(code: NanoWSD.WebSocketFrame.CloseCode?, reason: String?, initiatedByRemote: Boolean) {
+	override fun onClose(code: CloseCode?, reason: String?, initiatedByRemote: Boolean) {
 	}
 
-	override fun onMessage(message: NanoWSD.WebSocketFrame?) {
+	override fun onMessage(message: WebSocketFrame?) {
 	}
 
-	override fun onPong(pong: NanoWSD.WebSocketFrame?) {
+	override fun onPong(pong: WebSocketFrame?) {
 		pongCount++
 	}
 
@@ -49,12 +51,12 @@ class AdaWebSocket(handsShakeRequest: NanoHTTPD.IHTTPSession) : NanoWSD.WebSocke
 		super.ping(payload)
 		pingCount++
 		if (pingCount - pongCount > 3) {
-			close(NanoWSD.WebSocketFrame.CloseCode.GoingAway, "Missed too many ping requests.", false)
+			close(CloseCode.GoingAway, "Missed too many ping requests.", false)
 		}
 	}
 
-	companion object {
+  companion object {
 //		private const val TAG = "DebuggerWebSocket"
-	}
+  }
 
 }

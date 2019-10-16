@@ -5,7 +5,8 @@ import com.tlz.ada.*
 import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.models.Db
 import com.tlz.ada.models.InitInfo
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.response.Response
 
 /**
  * 初始化请求处理.
@@ -20,7 +21,7 @@ class InitRequestHandler(
     private val appManager: AdaApplicationManager
 ) : RequestHandler {
 
-  override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
+  override fun onRequest(session: IHTTPSession): Response? =
       when (session.uri) {
         "/api/init" -> handleInitRequest()
         else -> null
@@ -28,9 +29,9 @@ class InitRequestHandler(
 
   /**
    * 处理初始化请求.
-   * @return NanoHTTPD.Response
+   * @return AdaResponse
    */
-  private fun handleInitRequest(): NanoHTTPD.Response {
+  private fun handleInitRequest(): Response {
     val dbs = mutableListOf<Db>()
     dataProvider.getAllDatabase().forEach {
       runCatching {

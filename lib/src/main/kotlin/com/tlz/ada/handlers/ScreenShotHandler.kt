@@ -5,7 +5,10 @@ import com.tlz.ada.AdaActivityLifeCycleListener
 import com.tlz.ada.handleRequestSafely
 import com.tlz.ada.responseError
 import com.tlz.ada.verifyParams
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd.protocols.http.response.Status
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -18,7 +21,7 @@ import java.io.InputStream
  */
 class ScreenShotHandler(private val activityLifeCycleHooker: AdaActivityLifeCycleListener) : RequestHandler {
 
-  override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
+  override fun onRequest(session: IHTTPSession): Response? =
       when (session.uri) {
         "/api/app/screenshot" -> session.verifyParams(::handleScreenShotRequest)
         else -> null
@@ -26,15 +29,15 @@ class ScreenShotHandler(private val activityLifeCycleHooker: AdaActivityLifeCycl
 
   /**
    * 处理截图请求.
-   * @param session NanoHTTPD.IHTTPSession
-   * @return NanoHTTPD.Response
+   * @param session IHTTPSession
+   * @return AdaResponse
    */
-  private fun handleScreenShotRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+  private fun handleScreenShotRequest(session: IHTTPSession): Response =
       handleRequestSafely {
         activityLifeCycleHooker.currentActivityInstance?.window?.decorView?.let { dView ->
           dView.isDrawingCacheEnabled = true
           dView.buildDrawingCache()
-          NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "image/png", Bitmap.createBitmap(dView.drawingCache).toInputStream())
+          newChunkedResponse(Status.OK, "image/png", Bitmap.createBitmap(dView.drawingCache).toInputStream())
         } ?: responseError(errorMsg = "app未在前台")
       }
 

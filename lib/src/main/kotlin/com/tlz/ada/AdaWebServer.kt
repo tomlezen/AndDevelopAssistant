@@ -8,7 +8,11 @@ import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.db.AdaDataProviderImpl
 import com.tlz.ada.handlers.*
 import com.tlz.ada.socket.AdaWSD
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.NanoHTTPD
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
+import org.nanohttpd.protocols.http.response.Status
 import java.io.File
 
 
@@ -47,7 +51,7 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
     Ada.submitTask {
       runCatching {
         // 注册各种处理器
-        val wsd = AdaWSD()
+        val wsd = AdaWSD(port)
         handlers.add(LogRequestHandler(ctx, wsd))
         handlers.add(InitRequestHandler(ctx, dataProvider, appManager))
         handlers.add(DbRequestHandler(dataProvider))
@@ -56,7 +60,7 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
         handlers.add(ScreenShotHandler(activityLifeCycleHooker))
         handlers.add(DefaultRequestHandler(ctx))
 
-        start(10000)
+        start(10000, false)
         wsd.start(this)
         Log.e(TAG, "address: $serverAddress")
       }.onFailure {
@@ -80,13 +84,15 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
 
   override fun serve(session: IHTTPSession?): Response {
     session?.run {
+//      val startTimeMillis = System.currentTimeMillis()
       handlers.forEach {
         it.onRequest(session)?.let { resp ->
+//          Log.i(TAG, "${session.uri} response time ${System.currentTimeMillis() - startTimeMillis}")
           return resp
         }
       }
     }
-    return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "不支持该请求")
+    return newFixedLengthResponse(Status.FORBIDDEN, MIME_PLAINTEXT, "不支持该请求")
   }
 
   companion object {

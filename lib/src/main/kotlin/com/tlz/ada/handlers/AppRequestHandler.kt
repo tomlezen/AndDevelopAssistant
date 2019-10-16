@@ -9,8 +9,11 @@ import com.tlz.ada.AdaConstUtils.PAGE_INDEX
 import com.tlz.ada.AdaConstUtils.PAGE_SIZE
 import com.tlz.ada.AdaConstUtils.PKG
 import com.tlz.ada.AdaConstUtils.SEARCH
-import com.tlz.ada.models.Response
-import fi.iki.elonen.NanoHTTPD
+import com.tlz.ada.models.AdaResponse
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd.protocols.http.response.Status
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -28,7 +31,7 @@ class AppRequestHandler(
         private val ctx: Context,
         private val appManager: AdaApplicationManager
 ) : RequestHandler {
-    override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
+    override fun onRequest(session: IHTTPSession): Response? =
             when (session.uri) {
                 "/api/app/list" -> session.verifyParams(::handleAppListRequest, PAGE_SIZE, PAGE_SIZE, FILTER)
                 "/api/app/info" -> session.verifyParams(::handleAppInfoRequest, PKG)
@@ -40,10 +43,10 @@ class AppRequestHandler(
 
     /**
      * 处理应用列表请求.
-     * @param session NanoHTTPD.IHTTPSession
-     * @return NanoHTTPD.Response
+     * @param session IHTTPSession
+     * @return AdaResponse
      */
-    private fun handleAppListRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+    private fun handleAppListRequest(session: IHTTPSession): Response =
             handleRequestSafely {
                 val pageIndex = session.parms[PAGE_INDEX]?.toInt() ?: 1
                 val pageSize = session.parms[PAGE_SIZE]?.toInt() ?: 10
@@ -86,26 +89,26 @@ class AppRequestHandler(
                     }
                 } else filteredData
                 val resultData = data.subList((pageIndex - 1) * pageSize, min(pageIndex * pageSize, data.size))
-                responseData(Response(data = resultData, total = data.size))
+                responseData(AdaResponse(data = resultData, total = data.size))
             }
 
     /**
      * 处理应用信息请求.
-     * @param session NanoHTTPD.IHTTPSession
-     * @return NanoHTTPD.Response
+     * @param session IHTTPSession
+     * @return AdaResponse
      */
-    private fun handleAppInfoRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+    private fun handleAppInfoRequest(session: IHTTPSession): Response =
             handleRequestSafely {
-                responseData(Response(data = appManager.getApplicationInfoByPkg(session.parms[PKG]
+                responseData(AdaResponse(data = appManager.getApplicationInfoByPkg(session.parms[PKG]
                         ?: "")))
             }
 
     /**
      * 处理应用安装请求.
-     * @param session NanoHTTPD.IHTTPSession
-     * @return NanoHTTPD.Response
+     * @param session IHTTPSession
+     * @return AdaResponse
      */
-    private fun handleAppInstallRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+    private fun handleAppInstallRequest(session: IHTTPSession): Response =
             handleRequestSafely {
                 val apkFilePath = ctx.externalCacheDir?.absolutePath + "/install_apk.apk"
                 val apkFile = File(apkFilePath)
@@ -123,17 +126,17 @@ class AppRequestHandler(
 
     /**
      * 处理应用下载请求.
-     * @param session NanoHTTPD.IHTTPSession
-     * @return NanoHTTPD.Response
+     * @param session IHTTPSession
+     * @return AdaResponse
      */
-    private fun handleAppDownloadRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+    private fun handleAppDownloadRequest(session: IHTTPSession): Response =
             handleRequestSafely {
                 val pkg = session.parms["pkg"] ?: ""
                 val appInfo = appManager.getApplicationInfoByPkg(pkg)
                 if (appInfo?.path.isNullOrEmpty()) {
                     responseError(errorMsg = "不存在该应用")
                 } else {
-                    NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "application/octet-stream", File(appInfo!!.path).inputStream()).apply {
+                    newChunkedResponse(Status.OK, "application/octet-stream", File(appInfo!!.path).inputStream()).apply {
                         addHeader("Content-Disposition", "attachment; filename=${appInfo.name}.apk")
                     }
                 }
@@ -141,16 +144,16 @@ class AppRequestHandler(
 
     /**
      * 处理应用logo请求.
-     * @param session NanoHTTPD.IHTTPSession
-     * @return NanoHTTPD.Response
+     * @param session IHTTPSession
+     * @return AdaResponse
      */
-    private fun handleAppIconRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+    private fun handleAppIconRequest(session: IHTTPSession): Response =
             handleRequestSafely {
                 val pkg = session.parms["pkg"] ?: ""
                 val os = ByteArrayOutputStream()
                 val bitmapDrawable = appManager.getApplicationInfoByPkg(pkg)?.applicationInfo?.loadIcon(ctx.packageManager) as? BitmapDrawable
                 bitmapDrawable?.bitmap?.compress(Bitmap.CompressFormat.PNG, 100, os)
                 val ins = ByteArrayInputStream(os.toByteArray())
-                NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "image/png", ins)
+                newChunkedResponse(Status.OK, "image/png", ins)
             }
 }

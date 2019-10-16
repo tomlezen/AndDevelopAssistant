@@ -5,7 +5,10 @@ import com.tlz.ada.handleRequestSafely
 import com.tlz.ada.readHtml
 import com.tlz.ada.response
 import com.tlz.ada.responseHtml
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd.protocols.http.response.Status
 
 /**
  * 基础请求处理.
@@ -16,16 +19,16 @@ import fi.iki.elonen.NanoHTTPD
  */
 class DefaultRequestHandler(private val ctx: Context) : RequestHandler {
 
-	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
+	override fun onRequest(session: IHTTPSession): Response? =
 			handleRequestSafely {
 				val uri = session.uri
 				when {
 					uri.endsWith(".png") ->
-						NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "image/png", ctx.assets.open("web$uri"))
+						newChunkedResponse(Status.OK, "image/png", ctx.assets.open("web$uri"))
 					uri.endsWith(".ico") ->
-						NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "image/vnd.microsoft.icon", ctx.assets.open("web$uri"))
+						newChunkedResponse(Status.OK, "image/vnd.microsoft.icon", ctx.assets.open("web$uri"))
 					uri.endsWith(".svg") ->
-						NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "image/svg+xml", ctx.assets.open("web$uri"))
+						newChunkedResponse(Status.OK, "image/svg+xml", ctx.assets.open("web$uri"))
 					else -> {
 						try {
 							val file = uri.readHtml(ctx)
@@ -41,7 +44,7 @@ class DefaultRequestHandler(private val ctx: Context) : RequestHandler {
 							}
 						} catch (e: Exception) {
 							responseHtml("/index.html".readHtml(ctx))
-//							NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "")
+//							newFixedLengthResponse(AdaStatus.FORBIDDEN,MIME_PLAINTEXT, "")
 						}
 					}
 				}

@@ -1,6 +1,7 @@
 package com.tlz.ada.handlers
 
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.response.Response
 
 /**
  * 网络请求处理器.
@@ -11,6 +12,6 @@ import fi.iki.elonen.NanoHTTPD
  */
 interface RequestHandler {
 
-	fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response?
+	fun onRequest(session: IHTTPSession): Response?
 
 }

@@ -11,7 +11,10 @@ import com.tlz.ada.AdaConstUtils.WHERE
 import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.models.DataResponse
 import com.tlz.ada.models.KeyValue
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd.protocols.http.response.Status
 
 /**
  * 数据库请求处理.
@@ -22,7 +25,7 @@ import fi.iki.elonen.NanoHTTPD
  */
 class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandler {
 
-	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? {
+	override fun onRequest(session: IHTTPSession): Response? {
 		return when (session.uri) {
 			"/api/db/select" -> if (session.parms[DB_NAME] == "SharePreferences") {
 				session.verifyParams(::handleSqSelectRequest, SQL, DB_NAME, TABLE_NAME)
@@ -40,10 +43,10 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 
 	/**
 	 * 处理SharePreferences查询请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleSqSelectRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleSqSelectRequest(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val dName = session.parms[DB_NAME] ?: ""
 				val tName = session.parms[TABLE_NAME] ?: ""
@@ -57,10 +60,10 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 
 	/**
 	 * 处理数据库查询请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleDbSelectRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleDbSelectRequest(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val params = session.parms
 				val dName = params[DB_NAME] ?: ""
@@ -153,17 +156,17 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 
 	/**
 	 * 处理删除请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleDbDel(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleDbDel(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val dName = session.parms["dName"] ?: ""
 				val tName = session.parms["tName"] ?: ""
 				val where = session.parms["where"] ?: ""
 				if (where.isNotBlank()) {
 					if (dataProvider.delete(dName, tName, where)) {
-						responseData(com.tlz.ada.models.Response(data = "success"))
+						responseData(com.tlz.ada.models.AdaResponse(data = "success"))
 					} else {
 						responseError(errorMsg = "没有匹配的数据")
 					}
@@ -174,10 +177,10 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 
 	/**
 	 * 处理添加请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleDbAdd(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleDbAdd(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val dName = session.parms["dName"] ?: ""
 				val tName = session.parms["tName"] ?: ""
@@ -185,7 +188,7 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				if (data.isNotBlank()) {
 					(Ada.adaGson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
 						if (dataProvider.add(dName, tName, it)) {
-							responseData(com.tlz.ada.models.Response(data = "success"))
+							responseData(com.tlz.ada.models.AdaResponse(data = "success"))
 						} else {
 							responseError(errorMsg = "添加数据失败数据")
 						}
@@ -197,10 +200,10 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 
 	/**
 	 * 处理更新请求
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleDbUpdate(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleDbUpdate(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val dName = session.parms["dName"] ?: ""
 				val tName = session.parms["tName"] ?: ""
@@ -209,7 +212,7 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				if (where.isNotBlank() && data.isNotBlank()) {
 					(Ada.adaGson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
 						if (dataProvider.update(dName, tName, it, where)) {
-							responseData(com.tlz.ada.models.Response(data = "success"))
+							responseData(com.tlz.ada.models.AdaResponse(data = "success"))
 						} else {
 							responseError(errorMsg = "没有找到匹配的数据")
 						}
@@ -221,17 +224,17 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 
 	/**
 	 * 处理sql语句查询请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleDbExecute(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleDbExecute(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val dName = session.parms.getValue("dName")
 				val sql = session.parms.getValue("sql")
 				if (sql.isNotBlank()) {
 					val result = dataProvider.rawQuery(dName, sql)
 					if (result !is Boolean || result) {
-						responseData(com.tlz.ada.models.Response(data = if (result is Boolean) "success" else result))
+						responseData(com.tlz.ada.models.AdaResponse(data = if (result is Boolean) "success" else result))
 					} else {
 						responseError(errorMsg = "sql语句执行失败，请检查后再重试")
 					}
@@ -242,17 +245,17 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 
 	/**
 	 * 处理数据库文件下载请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleDbDownload(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleDbDownload(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val dName = session.parms["dName"] ?: ""
 				val file = dataProvider.getDatabaseFile(dName)
 				if (file == null) {
 					responseError(errorMsg = "不存在该数据库")
 				} else {
-					NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "*/*", file.inputStream()).apply {
+					newChunkedResponse(Status.OK, "*/*", file.inputStream()).apply {
 						addHeader("Content-Disposition", "attachment; filename=$dName")
 					}
 				}

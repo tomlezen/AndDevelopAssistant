@@ -8,9 +8,14 @@ import android.net.Uri
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.tlz.ada.models.AdaResponse
 import com.tlz.ada.models.FileInfo
-import com.tlz.ada.models.Response
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.NanoHTTPD.MIME_HTML
+import org.nanohttpd.protocols.http.NanoHTTPD.MIME_PLAINTEXT
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
+import org.nanohttpd.protocols.http.response.Status
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -30,9 +35,9 @@ internal fun Context.metaData(key: String): String =
     packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getString(key)
         ?: ""
 
-internal fun Context.metaDataInt(key: String, default: Int = 0): Int =
-    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getInt(key, default)
-        ?: default
+//internal fun Context.metaDataInt(key: String, default: Int = 0): Int =
+//    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)?.metaData?.getInt(key, default)
+//        ?: default
 
 /**
  * 读取html文件.
@@ -122,34 +127,34 @@ fun String.listFiles(): List<FileInfo> {
   return dirContent
 }
 
-fun response(type: String, html: String, cacheTime: String): NanoHTTPD.Response =
-    NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, type, html).apply {
+fun response(type: String, html: String, cacheTime: String): Response =
+    newFixedLengthResponse(Status.OK, type, html).apply {
       addHeader("Cache-Control", "public")
       addHeader("Cache-Control", "max-age=$cacheTime")
     }
 
-fun response(type: String, html: String): NanoHTTPD.Response =
-    NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, type, html)
+fun response(type: String, html: String): Response =
+    newFixedLengthResponse(Status.OK, type, html)
 
-fun responseData(data: Any): NanoHTTPD.Response =
-    NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, Ada.adaGson.toJson(data))
+fun responseData(data: Any): Response =
+    newFixedLengthResponse(Status.OK, MIME_PLAINTEXT, Ada.adaGson.toJson(data))
 
-fun responseHtml(html: String): NanoHTTPD.Response =
-    NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_HTML, html)
+fun responseHtml(html: String): Response =
+    newFixedLengthResponse(Status.OK, MIME_HTML, html)
 
-fun responseError(status: Int = 401, errorMsg: String): NanoHTTPD.Response =
-    responseData(Response(status, null, errorMsg))
+fun responseError(status: Int = 401, errorMsg: String): Response =
+    responseData(com.tlz.ada.models.AdaResponse(status, null, errorMsg))
 
-internal fun Any.toResponse(): Response = Response(data = this)
+internal fun Any.toResponse(): AdaResponse = AdaResponse(data = this)
 
 /**
  * 安全处理请求.
  * @param errorMsg String?
- * @param action () -> NanoHTTPD.Response
- * @return NanoHTTPD.Response
+ * @param action () -> AdaResponse
+ * @return AdaResponse
  */
 @SuppressLint("LongLogTag")
-internal fun handleRequestSafely(errorMsg: String? = null, action: () -> NanoHTTPD.Response): NanoHTTPD.Response =
+internal fun handleRequestSafely(errorMsg: String? = null, action: () -> Response): Response =
     try {
       action.invoke()
     } catch (t: Throwable) {
@@ -161,10 +166,9 @@ internal fun handleRequestSafely(errorMsg: String? = null, action: () -> NanoHTT
  * @receiver Map<String, String>
  * @param params Array<out String>
  */
-fun NanoHTTPD.IHTTPSession.verifyParams(doOnPass: (NanoHTTPD.IHTTPSession) -> NanoHTTPD.Response, vararg params: String):
-    NanoHTTPD.Response {
+fun IHTTPSession.verifyParams(doOnPass: (IHTTPSession) -> Response, vararg params: String): Response {
   return if (params.any { !this.parms.containsKey(it) }) {
-    NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "请求参数错误")
+    newFixedLengthResponse(Status.BAD_REQUEST, MIME_PLAINTEXT, "请求参数错误")
   } else {
     doOnPass(this)
   }
@@ -186,5 +190,5 @@ fun Context.isPermissionsGranted(vararg permissions: String): Boolean =
  */
 internal fun Context.adaServerPort() =
     runCatching {
-      metaDataInt("DEBUG_PORT", 10000)
+      getString(R.string.ADA_DEBUG_PORT).toIntOrNull() ?: 10000
     }.getOrNull() ?: 10000

@@ -1,7 +1,7 @@
 package com.tlz.ada
 
 import android.content.Context
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.tempfiles.*
 import java.io.File
 
 /**
@@ -9,15 +9,15 @@ import java.io.File
  * Data: 2018/9/5.
  * Time: 12:51.
  */
-class AdaTempFileManagerFactory(private val ctx: Context) : NanoHTTPD.TempFileManagerFactory {
+class AdaTempFileManagerFactory(private val ctx: Context) : DefaultTempFileManagerFactory() {
 
-  override fun create(): NanoHTTPD.TempFileManager =
+  override fun create(): ITempFileManager =
       AndTempFileManager(ctx.externalCacheDir?.absolutePath + "/AndDevelopAssistant")
 
-  class AndTempFileManager(tmpdir: String) : NanoHTTPD.TempFileManager {
+  class AndTempFileManager(tmpdir: String) : DefaultTempFileManager() {
 
     private val tempDirFile = File(tmpdir)
-    private val tempFiles = mutableListOf<NanoHTTPD.TempFile>()
+    private val tempFiles = mutableListOf<ITempFile>()
 
     init {
       if (!tempDirFile.exists()) {
@@ -35,8 +35,8 @@ class AdaTempFileManagerFactory(private val ctx: Context) : NanoHTTPD.TempFileMa
       this.tempFiles.clear()
     }
 
-    override fun createTempFile(filename_hint: String?): NanoHTTPD.TempFile =
-        NanoHTTPD.DefaultTempFile(tempDirFile).also {
+    override fun createTempFile(filename_hint: String?): ITempFile =
+        DefaultTempFile(tempDirFile).also {
           this.tempFiles += it
         }
   }
