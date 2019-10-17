@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">lib</string>
+
+    <string name="ADA_DEBUG_PORT">10000</string>
 </resources>

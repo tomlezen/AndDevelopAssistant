@@ -5,7 +5,10 @@ import com.tlz.ada.*
 import com.tlz.ada.AdaConstUtils.FILE_NAME
 import com.tlz.ada.AdaConstUtils.FOLDER_NAME
 import com.tlz.ada.AdaConstUtils.PATH
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd.protocols.http.response.Status
 import java.io.File
 
 /**
@@ -17,7 +20,7 @@ import java.io.File
  */
 class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 
-	override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
+	override fun onRequest(session: IHTTPSession): Response? =
 			when (session.uri) {
 				"/api/file/list" -> checkPermission { session.verifyParams(::handleFileListRequest, PATH) }
 				"/api/file/new_file" -> checkPermission { session.verifyParams(::handleNewFileRequest, PATH, FILE_NAME) }
@@ -30,10 +33,10 @@ class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 
 	/**
 	 * 检查权限.
-	 * @param doOnPermissionGranted () -> NanoHTTPD.Response
-	 * @return NanoHTTPD.Response
+	 * @param doOnPermissionGranted () -> AdaResponse
+	 * @return AdaResponse
 	 */
-	private fun checkPermission(doOnPermissionGranted: () -> NanoHTTPD.Response): NanoHTTPD.Response =
+	private fun checkPermission(doOnPermissionGranted: () -> Response): Response =
 			if (webServer.filePermissionGranted) {
 				doOnPermissionGranted.invoke()
 			} else {
@@ -42,19 +45,19 @@ class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 
 	/**
 	 * 处理文件列表请求.
-	 * @param session NanoHTTPD.IHTTPSession
+	 * @param session IHTTPSession
 	 */
-	private fun handleFileListRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleFileListRequest(session: IHTTPSession): Response =
 			handleRequestSafely {
 				responseData(session.filePath().listFiles().toResponse())
 			}
 
 	/**
 	 * 处理新建文件请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleNewFileRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleNewFileRequest(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val path = session.parms[PATH] ?: ""
 				val fileName = session.parms[FILE_NAME] ?: ""
@@ -78,10 +81,10 @@ class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 
 	/**
 	 * 处理新建文件夹请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleNewFolderRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleNewFolderRequest(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val folderName = session.parms[FOLDER_NAME] ?: ""
 				if (folderName.isEmpty()) {
@@ -103,10 +106,10 @@ class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 
 	/**
 	 * 处理文件上传请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleUploadRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleUploadRequest(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val path = session.filePath()
 				val parseBody = hashMapOf<String, String>()
@@ -127,10 +130,10 @@ class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 
 	/**
 	 * 处理文件下载请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleDownloadRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleDownloadRequest(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val path = session.parms[PATH]
 				val file = File(path)
@@ -139,7 +142,7 @@ class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 				} else if (!file.canRead()) {
 					responseError(errorMsg = "文件不可读取")
 				} else {
-					NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "*/*", file.inputStream()).apply {
+					newChunkedResponse(Status.OK, "*/*", file.inputStream()).apply {
 						addHeader("Content-Disposition", "attachment; filename=${file.name}")
 					}
 				}
@@ -147,10 +150,10 @@ class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 
 	/**
 	 * 处理文件删除请求.
-	 * @param session NanoHTTPD.IHTTPSession
-	 * @return NanoHTTPD.Response
+	 * @param session IHTTPSession
+	 * @return AdaResponse
 	 */
-	private fun handleFileDeleteRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+	private fun handleFileDeleteRequest(session: IHTTPSession): Response =
 			handleRequestSafely {
 				val path = session.filePath()
 				val file = File(path)
@@ -166,7 +169,7 @@ class FileRequestHandler(private val webServer: AdaWebServer) : RequestHandler {
 				}
 			}
 
-	private fun NanoHTTPD.IHTTPSession.filePath() =
+	private fun IHTTPSession.filePath() =
 			with(parms[PATH] ?: "") {
 				if (this == "root") {
 					Environment.getExternalStorageDirectory().absolutePath

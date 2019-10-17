@@ -1,12 +1,13 @@
 package com.tlz.ada.handlers
 
 import android.content.Context
-import android.util.Log.*
 import com.tlz.ada.*
 import com.tlz.ada.models.FileInfo
-import com.tlz.ada.models.Log
 import com.tlz.ada.socket.AdaWSD
-import fi.iki.elonen.NanoHTTPD
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd.protocols.http.response.Status
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -25,7 +26,7 @@ class LogRequestHandler(
 
   /** 日志文件，根据具体时间来生成. */
   private val logFileName by lazy {
-    val format = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.CHINA)
+    val format = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
     format.format(Date())
   }
 
@@ -50,35 +51,12 @@ class LogRequestHandler(
       cmd("logcat -v time") {
         // 写入到文件中
         logFile.appendText("\n" + it)
-        wsd.send(wrapLog(it.toLogObj()))
+        wsd.send(it)
       }
     }
   }
 
-  private fun String.toLogObj() =
-      when {
-        contains("V/") -> Log("V", VERBOSE, this, this)
-        contains("D/") -> Log("D", DEBUG, this, this)
-        contains("I/") -> Log("I", INFO, this, this)
-        contains("W/") -> Log("W", WARN, this, this)
-        contains("E/") -> Log("E", ERROR, this, this)
-        else -> Log("A", ASSERT, this, this)
-      }
-
-  /**
-   * 包装下.
-   * @return String
-   */
-  private fun wrapLog(log: Log): Log {
-    when (log.type) {
-      "E" -> log.content = "<p style='color: #FF3030'>${log.content}</p>"
-      "W" -> log.content = "<p style='color: #FA8072'>${log.content}</p>"
-      else -> log.content = "<p>${log.content}</p>"
-    }
-    return log
-  }
-
-  override fun onRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response? =
+  override fun onRequest(session: IHTTPSession): Response? =
       when (session.uri) {
         "/api/log/list" -> handleLogListRequest()
         "/api/log/delete" -> session.verifyParams(::handleLogDeleteRequest, AdaConstUtils.FILES)
@@ -88,9 +66,9 @@ class LogRequestHandler(
 
   /**
    * 处理日志列表请求.
-   * @return NanoHTTPD.Response
+   * @return AdaResponse
    */
-  private fun handleLogListRequest(): NanoHTTPD.Response =
+  private fun handleLogListRequest(): Response =
       handleRequestSafely {
         val files = mutableListOf<FileInfo>()
         val logCache = File(logCacheFolder)
@@ -116,9 +94,9 @@ class LogRequestHandler(
 
   /**
    * 处理日志删除请求.
-   * @param session: NanoHTTPD.IHTTPSession
+   * @param session: IHTTPSession
    */
-  private fun handleLogDeleteRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+  private fun handleLogDeleteRequest(session: IHTTPSession): Response =
       handleRequestSafely {
         val files = Ada.adaGson.fromJson<Array<String>>(session.parms["files"]
             ?: "{}", Array<String>::class.java)
@@ -132,19 +110,19 @@ class LogRequestHandler(
 
   /**
    * 处理日志文件下载请求.
-   * @param session NanoHTTPD.IHTTPSession
-   * @return NanoHTTPD.Response
+   * @param session IHTTPSession
+   * @return AdaResponse
    */
-  private fun handleLogDownloadRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response =
+  private fun handleLogDownloadRequest(session: IHTTPSession): Response =
       handleRequestSafely {
-        val fileName = session.parms["file_name"]
+        val fileName = session.parms["file_name"] ?: ""
         val file = File(logCacheFolder, fileName)
         if (!file.exists()) {
           responseError(errorMsg = "文件不存在")
         } else if (!file.canRead()) {
           responseError(errorMsg = "文件不可读取")
         } else {
-          NanoHTTPD.newChunkedResponse(NanoHTTPD.Response.Status.OK, "*/*", file.inputStream()).apply {
+          newChunkedResponse(Status.OK, "*/*", file.inputStream()).apply {
             addHeader("Content-Disposition", "attachment; filename=${file.name}")
           }
         }

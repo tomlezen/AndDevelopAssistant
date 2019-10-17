@@ -12,7 +12,7 @@ import android.support.annotation.Keep
  * @param total 数据总数.
  */
 @Keep
-class Response(
+class AdaResponse(
 		val status: Int = 200,
 		val data: Any? = null,
 		val errMsg: String = "",
