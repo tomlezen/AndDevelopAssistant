@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
+import com.tlz.ada.models.AdaResponse
 import com.tlz.ada.models.FileInfo
 import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.NanoHTTPD.MIME_HTML
@@ -142,7 +143,7 @@ fun responseHtml(html: String): Response =
     newFixedLengthResponse(Status.OK, MIME_HTML, html)
 
 fun responseError(status: Int = 401, errorMsg: String): Response =
-    responseData(com.tlz.ada.models.AdaResponse(status, null, errorMsg))
+    responseData(AdaResponse(status, null, errorMsg))
 
 internal fun Any.toResponse(): AdaResponse = AdaResponse(data = this)
 
