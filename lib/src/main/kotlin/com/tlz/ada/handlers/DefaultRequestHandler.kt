@@ -5,10 +5,10 @@ import com.tlz.ada.handleRequestSafely
 import com.tlz.ada.readHtml
 import com.tlz.ada.response
 import com.tlz.ada.responseHtml
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
-import org.nanohttpd.protocols.http.response.Status
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.response.Response
+import org.nanohttpd2.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd2.protocols.http.response.Status
 
 /**
  * 基础请求处理.

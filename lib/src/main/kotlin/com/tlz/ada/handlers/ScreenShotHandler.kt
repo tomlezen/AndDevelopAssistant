@@ -5,10 +5,10 @@ import com.tlz.ada.AdaActivityLifeCycleListener
 import com.tlz.ada.handleRequestSafely
 import com.tlz.ada.responseError
 import com.tlz.ada.verifyParams
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
-import org.nanohttpd.protocols.http.response.Status
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.response.Response
+import org.nanohttpd2.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd2.protocols.http.response.Status
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream

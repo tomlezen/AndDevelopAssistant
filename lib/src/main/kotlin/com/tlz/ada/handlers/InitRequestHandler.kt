@@ -5,8 +5,8 @@ import com.tlz.ada.*
 import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.models.Db
 import com.tlz.ada.models.InitInfo
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.response.Response
 
 /**
  * 初始化请求处理.

@@ -8,11 +8,11 @@ import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.db.AdaDataProviderImpl
 import com.tlz.ada.handlers.*
 import com.tlz.ada.socket.AdaWSD
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.NanoHTTPD
-import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
-import org.nanohttpd.protocols.http.response.Status
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.NanoHTTPD
+import org.nanohttpd2.protocols.http.response.Response
+import org.nanohttpd2.protocols.http.response.Response.newFixedLengthResponse
+import org.nanohttpd2.protocols.http.response.Status
 import java.io.File
 
 

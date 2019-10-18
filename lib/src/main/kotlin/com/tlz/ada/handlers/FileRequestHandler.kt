@@ -5,10 +5,10 @@ import com.tlz.ada.*
 import com.tlz.ada.AdaConstUtils.FILE_NAME
 import com.tlz.ada.AdaConstUtils.FOLDER_NAME
 import com.tlz.ada.AdaConstUtils.PATH
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
-import org.nanohttpd.protocols.http.response.Status
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.response.Response
+import org.nanohttpd2.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd2.protocols.http.response.Status
 import java.io.File
 
 /**

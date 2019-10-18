@@ -4,10 +4,10 @@ import android.content.Context
 import com.tlz.ada.*
 import com.tlz.ada.models.FileInfo
 import com.tlz.ada.socket.AdaWSD
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
-import org.nanohttpd.protocols.http.response.Status
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.response.Response
+import org.nanohttpd2.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd2.protocols.http.response.Status
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*

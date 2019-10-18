@@ -2,11 +2,11 @@ package com.tlz.ada.socket
 
 import com.tlz.ada.Ada
 import com.tlz.ada.models.Log
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.NanoHTTPD
-import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.websockets.NanoWSD
-import org.nanohttpd.protocols.websockets.WebSocket
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.NanoHTTPD
+import org.nanohttpd2.protocols.http.response.Response
+import org.nanohttpd2.protocols.websockets.NanoWSD
+import org.nanohttpd2.protocols.websockets.WebSocket
 
 
 /**

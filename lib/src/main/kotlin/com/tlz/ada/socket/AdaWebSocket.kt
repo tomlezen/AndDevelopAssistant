@@ -2,10 +2,10 @@ package com.tlz.ada.socket
 
 import android.util.Log
 import com.tlz.ada.Ada
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.websockets.CloseCode
-import org.nanohttpd.protocols.websockets.WebSocket
-import org.nanohttpd.protocols.websockets.WebSocketFrame
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.websockets.CloseCode
+import org.nanohttpd2.protocols.websockets.WebSocket
+import org.nanohttpd2.protocols.websockets.WebSocketFrame
 import java.io.IOException
 
 /**
