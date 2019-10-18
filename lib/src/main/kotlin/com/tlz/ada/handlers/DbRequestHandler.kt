@@ -11,10 +11,10 @@ import com.tlz.ada.AdaConstUtils.WHERE
 import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.models.DataResponse
 import com.tlz.ada.models.KeyValue
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
-import org.nanohttpd.protocols.http.response.Status
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.response.Response
+import org.nanohttpd2.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd2.protocols.http.response.Status
 
 /**
  * 数据库请求处理.

@@ -23,6 +23,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        exclude 'META-INF/*.kotlin_module'
+    }
 }
 
 dependencies {
@@ -32,8 +36,8 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'net.zetetic:android-database-sqlcipher:3.5.7@aar'
     implementation 'com.tlz.andbase:andbase:0.0.1'
-    debugImplementation project(':lib')
-//    debugImplementation 'com.tlz.tools:androiddebuglib:0.0.3'
+//    debugImplementation project(':lib')
+    debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.8-no-x'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'

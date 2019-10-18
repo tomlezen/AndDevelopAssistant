@@ -1,7 +1,7 @@
 package com.tlz.ada.handlers
 
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd2.protocols.http.IHTTPSession
+import org.nanohttpd2.protocols.http.response.Response
 
 /**
  * 网络请求处理器.
