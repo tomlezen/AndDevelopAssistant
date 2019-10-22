@@ -74,10 +74,10 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				var length = pageSize
 				var start = pageSize * (pageIndex - 1)
 				val tabInfo = dataProvider.getTableInfo(dName, tName)
-				val orderColumn = tabInfo?.fieldInfos?.find { params.containsKey(it.name) }?.name ?: ""
+				val orderColumn = tabInfo.fieldInfos.find { params.containsKey(it.name) }?.name ?: ""
 				val orderDir = params[orderColumn] ?: ""
-				var recordsTotal = 0
-				var recordsFiltered = 0
+				var recordsTotal: Int
+				var recordsFiltered: Int
 				dataProvider.getTableInfo(dName, tName).let {
 					var limitStart = 0
 					var limitLength = -1
@@ -112,7 +112,7 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 					}
 					recordsTotal = rMin(recordsTotal, limitLength)
 					//用户输入的过滤字符
-					val filterValue = params["search"]
+					val filterValue = params[AdaConstUtils.SEARCH]
 					val filterList = mutableListOf<String>()
 					if (!filterValue.isNullOrBlank()) {
 						it.fieldInfos.forEach { fieldInfo ->

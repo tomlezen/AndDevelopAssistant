@@ -11,6 +11,7 @@ import com.tlz.ada.models.TableFieldInfo
 import com.tlz.ada.models.TableInfo
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -108,7 +109,7 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
 
   override fun rawQuery(dName: String, sql: String): Any =
       dName.open {
-        if (sql.toLowerCase().startsWith("select ")) {
+        if (sql.toLowerCase(Locale.getDefault()).startsWith("select ")) {
           rawQuery(sql, null)
               .use { cursor ->
                 cursor.moveToNext()

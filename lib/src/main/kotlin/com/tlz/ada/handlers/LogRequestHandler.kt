@@ -46,7 +46,7 @@ class LogRequestHandler(
   }
 
   init {
-    // 自动开始日志记录功能
+    // 启动日志记录功能
     Ada.submitTask {
       cmd("logcat -v time") {
         // 写入到文件中
@@ -115,7 +115,7 @@ class LogRequestHandler(
    */
   private fun handleLogDownloadRequest(session: IHTTPSession): Response =
       handleRequestSafely {
-        val fileName = session.parms["file_name"] ?: ""
+        val fileName = session.parms[AdaConstUtils.FILE_NAME] ?: ""
         val file = File(logCacheFolder, fileName)
         if (!file.exists()) {
           responseError(errorMsg = "文件不存在")

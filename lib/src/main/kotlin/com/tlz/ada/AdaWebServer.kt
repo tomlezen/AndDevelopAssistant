@@ -84,10 +84,12 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
 
   override fun serve(session: IHTTPSession?): Response {
     session?.run {
-//      val startTimeMillis = System.currentTimeMillis()
+      val startTimeMillis = System.currentTimeMillis()
       handlers.forEach {
         it.onRequest(session)?.let { resp ->
-//          Log.i(TAG, "${session.uri} response time ${System.currentTimeMillis() - startTimeMillis}")
+          if (BuildConfig.DEBUG) {
+            Log.i(TAG, "${session.uri} response time ${System.currentTimeMillis() - startTimeMillis}")
+          }
           return resp
         }
       }
