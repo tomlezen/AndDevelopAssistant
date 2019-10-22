@@ -27,7 +27,7 @@ Gradle3.0以下： debugCompile 'com.tlz.tools:AndDevelopAssistant:0.1.0-no-x'
 
 ## 如何修改web访问端口
 
-需要在Manifest中加入meta-data数据：
+需要在build.gradle文件下加入以下代码：
 
 ```
 debug {
