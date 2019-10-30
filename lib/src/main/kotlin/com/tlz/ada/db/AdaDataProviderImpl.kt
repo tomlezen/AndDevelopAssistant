@@ -1,6 +1,7 @@
 package com.tlz.ada.db
 
 import android.content.Context
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.models.KeyValue
 import com.tlz.ada.models.Table
 import com.tlz.ada.models.TableInfo
@@ -19,6 +20,11 @@ class AdaDataProviderImpl(ctx: Context) : AdaDataProvider {
   override fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
     dbDataProvider.setCustomDatabaseFiles(files)
     spDataProvider.setCustomDatabaseFiles(files)
+  }
+
+  override fun setInMemoryRoomDatabases(databases: Map<String, SupportSQLiteDatabase>) {
+    dbDataProvider.setInMemoryRoomDatabases(databases)
+    spDataProvider.setInMemoryRoomDatabases(databases)
   }
 
   override fun getAllDatabase(): List<String> =

@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.util.Log
 import android.util.Pair
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.db.AdaDataProviderImpl
 import com.tlz.ada.handlers.*
@@ -82,12 +83,22 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
     dataProvider.setCustomDatabaseFiles(newFiles)
   }
 
+  /**
+   * 设置内存数据库.
+   * @param databases Map<String, SupportSQLiteDatabase>
+   */
+  fun setInMemoryRoomDatabases(databases: Map<String, SupportSQLiteDatabase>) {
+    if (databases.isEmpty()) return
+  }
+
   override fun serve(session: IHTTPSession?): Response {
     session?.run {
-//      val startTimeMillis = System.currentTimeMillis()
+      val startTimeMillis = System.currentTimeMillis()
       handlers.forEach {
         it.onRequest(session)?.let { resp ->
-//          Log.i(TAG, "${session.uri} response time ${System.currentTimeMillis() - startTimeMillis}")
+          if (BuildConfig.DEBUG) {
+            Log.i(TAG, "${session.uri} response time ${System.currentTimeMillis() - startTimeMillis}")
+          }
           return resp
         }
       }

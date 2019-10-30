@@ -98,7 +98,7 @@ class LogRequestHandler(
    */
   private fun handleLogDeleteRequest(session: IHTTPSession): Response =
       handleRequestSafely {
-        val files = Ada.adaGson.fromJson<Array<String>>(session.parms["files"]
+        val files = Ada.adaGson.fromJson<Array<String>>(session.parms[AdaConstUtils.FILES]
             ?: "{}", Array<String>::class.java)
         File(logCacheFolder).listFiles()
             .filter { it.name in files }
@@ -115,7 +115,7 @@ class LogRequestHandler(
    */
   private fun handleLogDownloadRequest(session: IHTTPSession): Response =
       handleRequestSafely {
-        val fileName = session.parms["file_name"] ?: ""
+        val fileName = session.parms[AdaConstUtils.FILE_NAME] ?: ""
         val file = File(logCacheFolder, fileName)
         if (!file.exists()) {
           responseError(errorMsg = "文件不存在")

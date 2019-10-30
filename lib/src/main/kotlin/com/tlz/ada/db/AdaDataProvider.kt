@@ -1,5 +1,6 @@
 package com.tlz.ada.db
 
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.models.KeyValue
 import com.tlz.ada.models.TableInfo
 import com.tlz.ada.models.Table
@@ -12,6 +13,8 @@ import java.io.File
  */
 interface AdaDataProvider {
   fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>)
+
+  fun setInMemoryRoomDatabases(databases: Map<String, SupportSQLiteDatabase>)
 
   fun getAllDatabase(): List<String>
 

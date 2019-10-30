@@ -2,6 +2,7 @@ package com.tlz.ada.db
 
 import android.content.ContentValues
 import android.content.Context
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.AdaConstUtils
 import com.tlz.ada.exceptions.AdaException
 import com.tlz.ada.metaData
@@ -11,6 +12,7 @@ import com.tlz.ada.models.TableFieldInfo
 import com.tlz.ada.models.TableInfo
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -23,6 +25,8 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
 
   /** 所有数据库文件. */
   private val databaseFiles = ConcurrentHashMap<String, Pair<File, String>>()
+  /** 内存数据库. */
+  private val inMemoryDatabases = ConcurrentHashMap<String, SupportSQLiteDatabase>()
   /** 所有的表信息. */
   private val tables = ConcurrentHashMap<String, Table>()
 
@@ -36,7 +40,13 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
     }
   }
 
-  override fun getAllDatabase(): List<String> = databaseFiles.keys().toList()
+  override fun setInMemoryRoomDatabases(databases: Map<String, SupportSQLiteDatabase>) {
+    databases.forEach {
+      inMemoryDatabases[it.key] = it.value
+    }
+  }
+
+  override fun getAllDatabase(): List<String> = databaseFiles.keys().toList() + inMemoryDatabases.keys().toList()
 
   override fun getDatabaseFile(dName: String): File? = databaseFiles[dName]?.first
 
@@ -108,7 +118,7 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
 
   override fun rawQuery(dName: String, sql: String): Any =
       dName.open {
-        if (sql.toLowerCase().startsWith("select ")) {
+        if (sql.toLowerCase(Locale.getDefault()).startsWith("select ")) {
           rawQuery(sql, null)
               .use { cursor ->
                 cursor.moveToNext()
