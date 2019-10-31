@@ -14,18 +14,18 @@ interface SQLiteDb {
 
     val isOpen: Boolean
 
-    val version: Boolean
+    val version: Int
 
-    fun delete(table: String, whereClause: String, whereArgs: Array<String>): Int
+    fun delete(table: String, whereClause: String?, whereArgs: Array<String>?): Int
 
     fun close()
 
-    fun rawQuery(sql: String, selectionArgs: Array<String>): Cursor
+    fun rawQuery(sql: String, selectionArgs: Array<String>? = null): Cursor
 
     @Throws(SQLException::class)
     fun execSQL(sql: String)
 
-    fun insert(table: String, nullColumnHack: String, values: ContentValues): Long
+    fun insert(table: String, nullColumnHack: String?, values: ContentValues): Long
 
-    fun update(table: String, values: ContentValues, whereClause: String, whereArgs: Array<String>): Int
+    fun update(table: String, values: ContentValues, whereClause: String, whereArgs: Array<String>?): Int
 }
