@@ -10,8 +10,8 @@ import androidx.room.PrimaryKey
  */
 @Entity
 data class RoomTest(
-        @PrimaryKey
-        private val id: Int,
-        private val test1: String,
-        private val test2: Int
+    @PrimaryKey
+    val id: Int,
+    val test1: String,
+    val test2: Int
 )
