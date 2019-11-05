@@ -1,10 +1,10 @@
 package com.tlz.ada
 
 import android.Manifest
+import android.arch.persistence.db.SupportSQLiteDatabase
 import android.content.Context
 import android.util.Log
 import android.util.Pair
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.db.AdaDataProviderImpl
 import com.tlz.ada.handlers.*

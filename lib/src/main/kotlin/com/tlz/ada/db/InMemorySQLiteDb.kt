@@ -1,8 +1,8 @@
 package com.tlz.ada.db
 
+import android.arch.persistence.db.SupportSQLiteDatabase
 import android.content.ContentValues
 import android.database.Cursor
-import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
  * Author: tomlezen

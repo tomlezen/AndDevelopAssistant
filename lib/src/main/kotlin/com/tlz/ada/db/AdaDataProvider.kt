@@ -1,6 +1,6 @@
 package com.tlz.ada.db
 
-import androidx.sqlite.db.SupportSQLiteDatabase
+import android.arch.persistence.db.SupportSQLiteDatabase
 import com.tlz.ada.models.KeyValue
 import com.tlz.ada.models.TableInfo
 import com.tlz.ada.models.Table

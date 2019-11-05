@@ -1,8 +1,8 @@
 package com.tlz.ada.db
 
+import android.arch.persistence.db.SupportSQLiteDatabase
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.Ada
 import com.tlz.ada.AdaConstUtils
 import com.tlz.ada.exceptions.AdaException

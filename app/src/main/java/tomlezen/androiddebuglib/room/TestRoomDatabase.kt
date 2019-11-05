@@ -1,7 +1,7 @@
 package tomlezen.androiddebuglib.room
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
+import android.arch.persistence.room.Database
+import android.arch.persistence.room.RoomDatabase
 
 /**
  * Author: tomlezen

@@ -2,13 +2,13 @@ package tomlezen.androiddebuglib
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.arch.persistence.db.SupportSQLiteDatabase
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Pair
 import android.widget.TextView
 import android.widget.Toast
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.andbase.persmission.RxPermissions
 import tomlezen.androiddebuglib.database.CustomDB
 import tomlezen.androiddebuglib.database.TestOneDb

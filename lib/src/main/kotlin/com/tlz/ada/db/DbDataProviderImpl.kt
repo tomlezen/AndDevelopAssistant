@@ -1,8 +1,8 @@
 package com.tlz.ada.db
 
+import android.arch.persistence.db.SupportSQLiteDatabase
 import android.content.ContentValues
 import android.content.Context
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.AdaConstUtils
 import com.tlz.ada.exceptions.AdaException
 import com.tlz.ada.metaData

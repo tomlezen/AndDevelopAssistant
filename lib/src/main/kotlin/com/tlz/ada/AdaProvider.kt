@@ -1,7 +1,7 @@
 package com.tlz.ada
 
+import android.arch.persistence.db.SupportSQLiteDatabase
 import android.util.Pair
-import androidx.sqlite.db.SupportSQLiteDatabase
 import android.support.annotation.Keep
 import java.io.File
 import java.net.Inet4Address
