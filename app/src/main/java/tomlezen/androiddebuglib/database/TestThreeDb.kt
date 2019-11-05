@@ -22,10 +22,11 @@ class TestThreeDb(ctx: Context): SQLiteOpenHelper(ctx, "TestThree.db", null, 1) 
   }
 
   fun init() {
-    readableDatabase.version
     (0..97).forEach {
       writableDatabase.execSQL("insert into table1 (name, age, birthday, number, address, grade, teacher) values ('name$it', ${Random().nextInt()}, 'birthday$it', 'number$it', 'address$it', ${(Random().nextFloat() * 100).toInt()}, 'teacher$it');")
     }
+
+    close()
   }
 
   companion object {

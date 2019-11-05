@@ -27,13 +27,14 @@ class CustomDB(ctx: Context): SQLiteOpenHelper(CustomDatabasePathContext(ctx), "
   }
 
   fun init(){
-    readableDatabase.version
     (1..50).forEach {
       val contentValues = ContentValues()
       contentValues.put("key", "key$it")
       contentValues.put("value", "$it")
       writableDatabase.insert(tableName, null, contentValues)
     }
+
+    close()
   }
 
   private class CustomDatabasePathContext(base: Context) : ContextWrapper(base) {

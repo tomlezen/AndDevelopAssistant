@@ -24,6 +24,8 @@ class TestTwoDb(ctx: Context): SQLiteOpenHelper(ctx, "TestTwo.db", null, 1) {
     (0..97).forEach {
       writableDatabase.execSQL("insert into table1 (name, phone, email, street, place, createdAt) values ('name$it', 'phone$it', 'email$it', 'street$it', 'place$it', ${System.currentTimeMillis()});")
     }
+
+    close()
   }
 
   companion object {

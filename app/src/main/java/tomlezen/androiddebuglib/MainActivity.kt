@@ -10,7 +10,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.andbase.persmission.RxPermissions
-import kotlinx.android.synthetic.main.activity_main.*
 import tomlezen.androiddebuglib.database.CustomDB
 import tomlezen.androiddebuglib.database.TestOneDb
 import tomlezen.androiddebuglib.database.TestThreeDb
@@ -61,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         customDatabaseFiles["Custom.db"] = Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), "")
         method.invoke(null, customDatabaseFiles)
 
-        //初始化room数据库
+        //初始化内存数据库
         val setInMemoryDbMethod = initializer.getMethod("setInMemoryRoomDatabases", Map::class.java)
         val inMemoryDbs = HashMap<String, SupportSQLiteDatabase>()
         inMemoryDbs[roomDbTestHelper.name] = roomDbTestHelper.inMemoryAppDatabase

@@ -12,6 +12,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 class RoomDBTestHelper(ctx: Context) {
 
+    private val roomAppDatabase = Room.databaseBuilder(ctx, TestRoomDatabase::class.java, "RoomTest")
+            .allowMainThreadQueries()
+            .build()
+
     private val _inMemoryAppDatabase = Room.inMemoryDatabaseBuilder(ctx, TestRoomDatabase::class.java)
             .allowMainThreadQueries()
             .build()
@@ -20,11 +24,14 @@ class RoomDBTestHelper(ctx: Context) {
         get() = _inMemoryAppDatabase.openHelper.writableDatabase
 
     val name: String
-        get() = _inMemoryAppDatabase.openHelper.databaseName ?: ""
+        get() = _inMemoryAppDatabase.openHelper.databaseName ?: "MemoryTest.db"
 
     fun init() {
         (0 until 100).forEach {
             _inMemoryAppDatabase.roomTestDao().insert(RoomTest(it, "test$it", 1000 + it))
+        }
+        (0 until 100).forEach {
+            roomAppDatabase.roomTestDao().insert(RoomTest(it, "test$it", 1000 + it))
         }
     }
 }

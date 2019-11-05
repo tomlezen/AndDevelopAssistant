@@ -60,13 +60,13 @@ class NormalSQLiteDb(private val ctx: Context, private val dbFile: File, private
         SQLiteDatabase.loadLibs(ctx)
         val db = SQLiteDatabase.openOrCreateDatabase(dbFile, if (password.isNullOrEmpty()) null else password, null)
         return try {
-            db.beginTransaction()
+//            db.beginTransaction()
             block.invoke(db).apply {
-                db.setTransactionSuccessful()
+//                db.setTransactionSuccessful()
             }
         } finally {
-            db.endTransaction()
-            db.close()
+//            db.endTransaction()
+//            db.close()
         }
     }
 

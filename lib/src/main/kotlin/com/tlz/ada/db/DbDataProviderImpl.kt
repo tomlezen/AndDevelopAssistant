@@ -228,11 +228,15 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
             (sqliteDbs[this] ?: create().also {
                 sqliteDbs[this] = it
             }).let {
-                block.invoke(it)
+                try {
+                    block.invoke(it)
+                } finally {
+                    it.close()
+                }
             }
 
     private fun String.create(): SQLiteDb {
-        if (inMemoryDatabases.contains(this)) return InMemorySQLiteDb(inMemoryDatabases[this]!!)
+        if (inMemoryDatabases.containsKey(this)) return InMemorySQLiteDb(inMemoryDatabases[this]!!)
         return NormalSQLiteDb(ctx, databaseFiles[this]?.first
                 ?: throw AdaException("不存在该数据库"), this, getDatabasePassword(this))
     }

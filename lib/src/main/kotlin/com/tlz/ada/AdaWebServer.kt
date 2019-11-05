@@ -89,6 +89,7 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
    */
   fun setInMemoryRoomDatabases(databases: Map<String, SupportSQLiteDatabase>) {
     if (databases.isEmpty()) return
+    dataProvider.setInMemoryRoomDatabases(databases)
   }
 
   override fun serve(session: IHTTPSession?): Response {

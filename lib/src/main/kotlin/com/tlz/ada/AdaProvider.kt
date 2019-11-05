@@ -27,7 +27,7 @@ object AdaProvider {
   }
 
   /**
-   * 设置内存数据库(Room).
+   * 设置内存数据库.
    * @param databases Map<String, SupportSQLiteDatabase>
    */
   @Keep
