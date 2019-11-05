@@ -8,11 +8,13 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Pair
 import android.widget.TextView
 import android.widget.Toast
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.andbase.persmission.RxPermissions
 import tomlezen.androiddebuglib.database.CustomDB
 import tomlezen.androiddebuglib.database.TestOneDb
 import tomlezen.androiddebuglib.database.TestThreeDb
 import tomlezen.androiddebuglib.database.TestTwoDb
+import tomlezen.androiddebuglib.room.RoomDBTestHelper
 import java.io.File
 import java.util.*
 
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
+    val roomDbTestHelper = RoomDBTestHelper(this)
     Thread{
       val prefsOne = getSharedPreferences("TestOne", Context.MODE_PRIVATE)
       val prefsTwo = getSharedPreferences("TestTwo", Context.MODE_PRIVATE)
@@ -44,6 +47,8 @@ class MainActivity : AppCompatActivity() {
       TestOneDb.create(this)
       TestTwoDb.create(this)
       TestThreeDb.create(this)
+
+      roomDbTestHelper.init()
     }.start()
 
     if (BuildConfig.DEBUG) {
@@ -54,6 +59,13 @@ class MainActivity : AppCompatActivity() {
         val customDatabaseFiles = HashMap<String, Pair<File, String>>()
         customDatabaseFiles["Custom.db"] = Pair(File("${filesDir.absolutePath}/custom_dir/Custom.db"), "")
         method.invoke(null, customDatabaseFiles)
+
+        //初始化内存数据库
+        val setInMemoryDbMethod = initializer.getMethod("setInMemoryRoomDatabases", Map::class.java)
+        val inMemoryDbs = HashMap<String, SupportSQLiteDatabase>()
+        inMemoryDbs[roomDbTestHelper.name] = roomDbTestHelper.inMemoryAppDatabase
+        setInMemoryDbMethod.invoke(null, inMemoryDbs)
+
         //获取服务端地址
         val serverAddressMethod = initializer.getMethod("getAdaServerAddress")
         findViewById<TextView>(R.id.tv_ip).text = "服务器地址：${serverAddressMethod.invoke(null)}"
@@ -68,11 +80,6 @@ class MainActivity : AppCompatActivity() {
         .subscribe{
           Toast.makeText(this, "您拒绝了文件读写权限，会导致文件相关功能不可用", Toast.LENGTH_LONG).show()
         }
-
-//
-//    btn_throw_exception.setOnClickListener {
-//      throw NullPointerException()
-//    }
   }
 
 }

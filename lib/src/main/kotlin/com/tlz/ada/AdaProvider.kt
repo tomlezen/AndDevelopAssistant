@@ -1,6 +1,7 @@
 package com.tlz.ada
 
 import android.util.Pair
+import androidx.sqlite.db.SupportSQLiteDatabase
 import android.support.annotation.Keep
 import java.io.File
 import java.net.Inet4Address
@@ -23,6 +24,16 @@ object AdaProvider {
   @JvmStatic
   fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {
     Ada.adaWebServer.setCustomDatabaseFiles(files)
+  }
+
+  /**
+   * 设置内存数据库.
+   * @param databases Map<String, SupportSQLiteDatabase>
+   */
+  @Keep
+  @JvmStatic
+  fun setInMemoryRoomDatabases(databases: Map<String, SupportSQLiteDatabase>) {
+    Ada.adaWebServer.setInMemoryRoomDatabases(databases)
   }
 
   /**

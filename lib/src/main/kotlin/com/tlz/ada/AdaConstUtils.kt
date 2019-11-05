@@ -37,5 +37,6 @@ object AdaConstUtils {
 	const val FILE_NAME = "file_name"
 	const val FILES = "files"
 	const val FOLDER_NAME = "folder_name"
+	const val LIMIT = "limit"
 
 }

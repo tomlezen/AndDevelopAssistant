@@ -24,13 +24,14 @@ class TestOneDb(ctx: Context): SQLiteOpenHelper(ctx, "TestOne.db", null, 1) {
   }
 
   fun init() {
-    readableDatabase.version
     (0..55).forEach {
       writableDatabase.execSQL("insert into table1 (field1, field2, field3) values ('value$it', 'content$it', ${Random().nextFloat()});")
     }
     (0..9).forEach {
       writableDatabase.execSQL("insert into table2 (field1) values ('hello$it');")
     }
+
+    close()
   }
 
   companion object {

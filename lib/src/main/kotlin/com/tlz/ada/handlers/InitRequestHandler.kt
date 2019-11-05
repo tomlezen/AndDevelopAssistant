@@ -37,6 +37,8 @@ class InitRequestHandler(
       runCatching {
         val tabWrapper = dataProvider.getAllTable(it)
         dbs.add(Db(it, tabWrapper.version, tabWrapper.tableInfos))
+      }.onFailure {
+        it.printStackTrace()
       }
     }
     return appManager.getApplicationInfoByPkg(ctx.packageName)?.run {

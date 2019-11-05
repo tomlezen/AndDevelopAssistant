@@ -2,6 +2,7 @@ package com.tlz.ada.db
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.Ada
 import com.tlz.ada.AdaConstUtils
 import com.tlz.ada.exceptions.AdaException
@@ -21,6 +22,8 @@ internal class SpDataProviderImpl(private val ctx: Context) : AdaDataProvider {
   private var spTables = mutableListOf<TableInfo>()
 
   override fun setCustomDatabaseFiles(files: Map<String, Pair<File, String>>) {}
+
+  override fun setInMemoryRoomDatabases(databases: Map<String, SupportSQLiteDatabase>) {}
 
   override fun getAllDatabase(): List<String> = listOf(AdaConstUtils.PREFS)
 

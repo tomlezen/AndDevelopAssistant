@@ -51,8 +51,7 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 				val dName = session.parms[DB_NAME] ?: ""
 				val tName = session.parms[TABLE_NAME] ?: ""
 				val tabInfo = dataProvider.getTableInfo(dName, tName)
-				val orderColumn = tabInfo.fieldInfos.find { session.parms.containsKey(it.name) }?.name
-						?: ""
+				val orderColumn = tabInfo.fieldInfos.find { session.parms.containsKey(it.name) }?.name ?: ""
 				val orderDir = session.parms[orderColumn] ?: ""
 				val data = dataProvider.query(dName, tName, orderDir)
 				return@handleRequestSafely responseData(DataResponse(data.size, data.size, data))
@@ -83,9 +82,9 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 					var limitLength = -1
 					var tSearchSql = originalSql
 					//分割limit限制
-					if (tSearchSql.contains("limit")) {
+					if (tSearchSql.contains(AdaConstUtils.LIMIT)) {
 						runCatching{
-							val index = tSearchSql.indexOf("limit")
+							val index = tSearchSql.indexOf(AdaConstUtils.LIMIT)
 							val limitStr = tSearchSql.substring(index + 5, tSearchSql.length)
 							val limitParams = limitStr.split(",")
 							if (limitParams.size == 1) {
@@ -104,7 +103,7 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 					//客户端执行的查询语句不能够有排序代码
 					val searchSql = if (tSearchSql.contains("order by ")) tSearchSql.substring(0, tSearchSql.indexOf("order by")) else tSearchSql
 					//获取where条件
-					val where = if (searchSql.contains("where")) searchSql.substring(searchSql.indexOf("where") + 5, searchSql.length) else ""
+					val where = if (searchSql.contains(WHERE)) searchSql.substring(searchSql.indexOf(WHERE) + 5, searchSql.length) else ""
 					//获取查询到的数据最大数量.
 					recordsTotal = dataProvider.getTableDataCount(dName, tName, where)
 					if (recordsTotal - limitStart >= 0) {
@@ -161,9 +160,9 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 	 */
 	private fun handleDbDel(session: IHTTPSession): Response =
 			handleRequestSafely {
-				val dName = session.parms["dName"] ?: ""
-				val tName = session.parms["tName"] ?: ""
-				val where = session.parms["where"] ?: ""
+				val dName = session.parms[DB_NAME] ?: ""
+				val tName = session.parms[TABLE_NAME] ?: ""
+				val where = session.parms[WHERE] ?: ""
 				if (where.isNotBlank()) {
 					if (dataProvider.delete(dName, tName, where)) {
 						responseData(com.tlz.ada.models.AdaResponse(data = "success"))
@@ -182,9 +181,9 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 	 */
 	private fun handleDbAdd(session: IHTTPSession): Response =
 			handleRequestSafely {
-				val dName = session.parms["dName"] ?: ""
-				val tName = session.parms["tName"] ?: ""
-				val data = session.parms["data"] ?: ""
+				val dName = session.parms[DB_NAME] ?: ""
+				val tName = session.parms[TABLE_NAME] ?: ""
+				val data = session.parms[DATA] ?: ""
 				if (data.isNotBlank()) {
 					(Ada.adaGson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
 						if (dataProvider.add(dName, tName, it)) {
@@ -205,10 +204,10 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 	 */
 	private fun handleDbUpdate(session: IHTTPSession): Response =
 			handleRequestSafely {
-				val dName = session.parms["dName"] ?: ""
-				val tName = session.parms["tName"] ?: ""
-				val where = session.parms["where"] ?: ""
-				val data = session.parms["data"] ?: ""
+				val dName = session.parms[DB_NAME] ?: ""
+				val tName = session.parms[TABLE_NAME] ?: ""
+				val where = session.parms[WHERE] ?: ""
+				val data = session.parms[DATA] ?: ""
 				if (where.isNotBlank() && data.isNotBlank()) {
 					(Ada.adaGson.fromJson<Array<KeyValue>>(data, Array<KeyValue>::class.java))?.let {
 						if (dataProvider.update(dName, tName, it, where)) {
@@ -229,8 +228,8 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 	 */
 	private fun handleDbExecute(session: IHTTPSession): Response =
 			handleRequestSafely {
-				val dName = session.parms.getValue("dName")
-				val sql = session.parms.getValue("sql")
+				val dName = session.parms.getValue(DB_NAME)
+				val sql = session.parms.getValue(SQL)
 				if (sql.isNotBlank()) {
 					val result = dataProvider.rawQuery(dName, sql)
 					if (result !is Boolean || result) {
@@ -250,7 +249,7 @@ class DbRequestHandler(private val dataProvider: AdaDataProvider) : RequestHandl
 	 */
 	private fun handleDbDownload(session: IHTTPSession): Response =
 			handleRequestSafely {
-				val dName = session.parms["dName"] ?: ""
+				val dName = session.parms[DB_NAME] ?: ""
 				val file = dataProvider.getDatabaseFile(dName)
 				if (file == null) {
 					responseError(errorMsg = "不存在该数据库")

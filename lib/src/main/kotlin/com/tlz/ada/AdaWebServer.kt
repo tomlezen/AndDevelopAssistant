@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.util.Log
 import android.util.Pair
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tlz.ada.db.AdaDataProvider
 import com.tlz.ada.db.AdaDataProviderImpl
 import com.tlz.ada.handlers.*
@@ -80,6 +81,15 @@ class AdaWebServer internal constructor(internal val ctx: Context, port: Int) : 
       newFiles[it.key] = it.value.first to it.value.second
     }
     dataProvider.setCustomDatabaseFiles(newFiles)
+  }
+
+  /**
+   * 设置内存数据库.
+   * @param databases Map<String, SupportSQLiteDatabase>
+   */
+  fun setInMemoryRoomDatabases(databases: Map<String, SupportSQLiteDatabase>) {
+    if (databases.isEmpty()) return
+    dataProvider.setInMemoryRoomDatabases(databases)
   }
 
   override fun serve(session: IHTTPSession?): Response {

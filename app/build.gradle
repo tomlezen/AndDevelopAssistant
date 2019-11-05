@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
-
+apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
 android {
@@ -35,7 +35,14 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'net.zetetic:android-database-sqlcipher:3.5.7@aar'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'com.tlz.andbase:andbase:0.0.1'
+    debugImplementation project(':lib')
+//    debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.8-no-x'
+    implementation 'androidx.room:room-runtime:2.2.1'
+    kapt 'androidx.room:room-compiler:2.2.1'
+//    kapt 'android.arch.persistence.room:compiler:1.1.1'
     debugImplementation project(':lib')
 //    debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.8-no-x'
 
