@@ -13,6 +13,8 @@ import java.io.File
  */
 class NormalSQLiteDb(private val ctx: Context, private val dbFile: File, private val dName: String, private val password: String?) : SQLiteDb {
 
+    private var db: SQLiteDatabase? = null
+
     override val isOpen: Boolean
         get() = false
 
@@ -27,7 +29,7 @@ class NormalSQLiteDb(private val ctx: Context, private val dbFile: File, private
             }
 
     override fun close() {
-
+        db?.close()
     }
 
     override fun rawQuery(sql: String, selectionArgs: Array<String>?): Cursor =
@@ -58,10 +60,10 @@ class NormalSQLiteDb(private val ctx: Context, private val dbFile: File, private
      */
     private fun <T> open(block: SQLiteDatabase.() -> T): T {
         SQLiteDatabase.loadLibs(ctx)
-        val db = SQLiteDatabase.openOrCreateDatabase(dbFile, if (password.isNullOrEmpty()) null else password, null)
+        db = SQLiteDatabase.openOrCreateDatabase(dbFile, if (password.isNullOrEmpty()) null else password, null)
         return try {
 //            db.beginTransaction()
-            block.invoke(db).apply {
+            block.invoke(db!!).apply {
 //                db.setTransactionSuccessful()
             }
         } finally {
