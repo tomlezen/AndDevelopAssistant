@@ -39,7 +39,7 @@ dependencies {
     kapt 'androidx.room:room-compiler:2.2.1'
 //    kapt 'android.arch.persistence.room:compiler:1.1.1'
     debugImplementation project(':lib')
-//    debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.0.8-no-x'
+//    debugImplementation 'com.tlz.tools:AndDevelopAssistant:0.1.1-no-x'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.0'

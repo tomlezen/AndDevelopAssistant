@@ -28,7 +28,7 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
     private val inMemoryDatabases = ConcurrentHashMap<String, SupportSQLiteDatabase>()
     /** 所有的表信息. */
     private val tables = ConcurrentHashMap<String, Table>()
-
+    /** sqlite数据库. */
     private val sqliteDbs = ConcurrentHashMap<String, SQLiteDb>()
 
     init {
@@ -48,9 +48,17 @@ class DbDataProviderImpl(private val ctx: Context) : AdaDataProvider {
         }
     }
 
-    override fun getAllDatabase(): List<String> = databaseFiles.keys().toList()
+    override fun getAllDatabase(): List<String> {
+      // 再去加载一次数据库 防止读取不全
+      loadDatabaseFile()
+     return databaseFiles.keys().toList()
+    }
 
-    override fun getDatabaseFile(dName: String): File? = databaseFiles[dName]?.first
+    override fun getDatabaseFile(dName: String): File? {
+      // 再去加载一次数据库 防止读取不全
+      loadDatabaseFile()
+      return databaseFiles[dName]?.first
+    }
 
     override fun getAllTable(dName: String): Table =
             dName.open {
