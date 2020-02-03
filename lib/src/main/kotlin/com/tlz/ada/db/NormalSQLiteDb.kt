@@ -59,6 +59,7 @@ class NormalSQLiteDb(private val ctx: Context, private val dbFile: File, private
      * @return T
      */
     private fun <T> open(block: SQLiteDatabase.() -> T): T {
+        close()
         SQLiteDatabase.loadLibs(ctx)
         db = SQLiteDatabase.openOrCreateDatabase(dbFile, if (password.isNullOrEmpty()) null else password, null)
         return try {
